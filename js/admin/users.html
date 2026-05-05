@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users — LaTAFU Admin</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .filter-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Admin Panel</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link active" href="users.html"><span class="link-icon">👥</span> Users</a>
+        <a class="sidebar-link" href="violations.html"><span class="link-icon">🚨</span> Violations</a>
+        <a class="sidebar-link" href="leuhaufe-scores.html"><span class="link-icon">✦</span> LeUHaute Scores</a>
+        <a class="sidebar-link" href="payments.html"><span class="link-icon">💰</span> Payments</a>
+        <a class="sidebar-link" href="settings.html"><span class="link-icon">⚙️</span> Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" style="background:rgba(255,71,87,0.1);color:var(--danger)">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:var(--danger)">Administrator</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div style="margin-bottom:24px"><h2>User Management</h2><p style="color:var(--text-muted)">All students and teachers on LaTAFU</p></div>
+    <div class="filter-row">
+      <div class="tabs" style="width:auto;margin-bottom:0">
+        <div class="tab active" onclick="switchTab(this,'all')">All</div>
+        <div class="tab" onclick="switchTab(this,'students')">Students</div>
+        <div class="tab" onclick="switchTab(this,'teachers')">Teachers</div>
+      </div>
+      <input type="text" class="form-input" id="searchInput" placeholder="Search by name, email, city..." style="max-width:300px" oninput="filterUsers()">
+    </div>
+    <div class="table-wrap">
+      <table class="table" id="usersTable">
+        <thead><tr><th>User</th><th>Role</th><th>Plan</th><th>Location</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="usersBody">
+          ${Array(5).fill(`<tr>${Array(6).fill('<td><div class="skeleton skeleton-text w-75"></div></td>').join('')}</tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">User Details</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-danger btn-sm" id="suspendBtn" onclick="suspendUser()">Suspend</button>
+      <button class="btn btn-success btn-sm" id="verifyBtn" onclick="verifyTeacher()">Verify Teacher</button>
+      <button class="modal-close btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdminAuth, logout } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireAdminAuth();
+  window.doLogout = async () => { await logout(); };
+
+  let allUsers = [];
+  let activeTab = 'all';
+  let selectedUser = null;
+
+  async function load() {
+    const [studSnap, teachSnap] = await Promise.all([getDocs(collection(db,'students')), getDocs(collection(db,'teachers'))]);
+    const students = studSnap.docs.map(d=>({id:d.id,...d.data(),role:'student'}));
+    const teachers = teachSnap.docs.map(d=>({id:d.id,...d.data(),role:'teacher'}));
+    allUsers = [...students,...teachers].sort((a,b)=>{ const da=a.createdAt?.toDate?.()??new Date(0); const db2=b.createdAt?.toDate?.()??new Date(0); return db2-da; });
+    render();
+  }
+
+  window.switchTab = function(el, tab) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active'); activeTab = tab; render();
+  };
+
+  window.filterUsers = function() { render(); };
+
+  function render() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    let filtered = allUsers.filter(u => {
+      if (activeTab === 'students' && u.role !== 'student') return false;
+      if (activeTab === 'teachers' && u.role !== 'teacher') return false;
+      if (search) return (u.name||'').toLowerCase().includes(search)||(u.email||'').toLowerCase().includes(search)||(u.city||'').toLowerCase().includes(search);
+      return true;
+    });
+
+    document.getElementById('usersBody').innerHTML = filtered.map(u=>`
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="avatar avatar-sm" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(u.name||'?').charAt(0)}</div>
+            <div><div style="font-weight:600;font-size:0.88rem">${u.name||'—'}</div><div style="font-size:0.75rem;color:var(--text-muted)">${u.email||'—'}</div></div>
+          </div>
+        </td>
+        <td><span class="badge ${u.role==='teacher'?'badge-success':'badge-primary'}">${u.role}</span></td>
+        <td><span class="badge ${u.subscription==='pro'||u.subscription==='plus'?'badge-gold':'badge-navy'}">${u.subscription||'free'}</span></td>
+        <td style="color:var(--text-muted);font-size:0.85rem">${u.city||'—'}</td>
+        <td style="color:var(--text-muted);font-size:0.78rem">${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString():'—'}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick='openUser(${JSON.stringify(u).replace(/'/g,"\\'")})''>View</button>
+            ${u.role==='teacher'&&!u.verified?`<button class="btn btn-success btn-sm" onclick='quickVerify("${u.id}")'>Verify</button>`:''}
+          </div>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">No users found</td></tr>';
+  }
+
+  window.openUser = function(u) {
+    selectedUser = u;
+    document.getElementById('modalTitle').textContent = u.name || 'User';
+    document.getElementById('modalBody').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:0.88rem">
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">Email:</strong>${u.email||'—'}</div>
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">Role:</strong>${u.role}</div>
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">Plan:</strong>${u.subscription||'free'}</div>
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">City:</strong>${u.city||'—'}</div>
+        ${u.role==='teacher'?`
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">Subjects:</strong>${(u.subjects||[]).join(', ')||'—'}</div>
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">Fee:</strong>₹${u.fee||0}/hr</div>
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">Verified:</strong>${u.verified?'✅ Yes':'❌ No'}</div>
+        <div style="display:flex;gap:8px"><strong style="width:120px;color:var(--text-muted)">LeUHaute:</strong>${u.leuhaufeScore||'Not done'}</div>`:''}
+      </div>`;
+    document.getElementById('userModal').classList.add('active');
+    document.getElementById('verifyBtn').style.display = u.role==='teacher'&&!u.verified?'block':'none';
+  };
+
+  window.closeModal = function() { document.getElementById('userModal').classList.remove('active'); };
+
+  window.quickVerify = async function(id) {
+    await updateDoc(doc(db,'teachers',id), { verified:true });
+    load();
+  };
+
+  window.verifyTeacher = async function() {
+    if (!selectedUser) return;
+    await updateDoc(doc(db,'teachers',selectedUser.id), { verified:true });
+    closeModal(); load();
+  };
+
+  window.suspendUser = async function() {
+    if (!selectedUser||!confirm('Suspend this user?')) return;
+    const col = selectedUser.role==='teacher'?'teachers':'students';
+    await updateDoc(doc(db,col,selectedUser.id), { active:false });
+    closeModal(); load();
+  };
+
+  load();
+</script>
+</body>
+</html>

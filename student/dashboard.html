@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — LaTAFU Student</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); }
+    .layout { display: flex; min-height: 100vh; }
+    .main { flex: 1; margin-left: 260px; padding: 32px; }
+    @media(max-width:900px) { .main { margin-left: 0; padding: 20px; } }
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary), var(--navy));
+      border-radius: var(--radius-xl); padding: 36px 40px;
+      color: white; margin-bottom: 28px; position: relative; overflow: hidden;
+    }
+    .welcome-banner::after { content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.05); }
+    .welcome-banner h2 { color: white; font-size: 1.7rem; margin-bottom: 6px; }
+    .welcome-banner p { color: rgba(255,255,255,0.75); margin-bottom: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .content-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+    @media(max-width:1100px) { .content-grid { grid-template-columns: 1fr; } }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-header h3 { font-size: 1.1rem; color: var(--navy); }
+    .ai-assistant-box {
+      background: linear-gradient(135deg, var(--navy), #1a3a7a);
+      border-radius: var(--radius-xl); padding: 24px; color: white;
+    }
+    .ai-chat-history { min-height: 200px; max-height: 260px; overflow-y: auto; margin: 16px 0; display: flex; flex-direction: column; gap: 10px; }
+    .ai-input-row { display: flex; gap: 8px; }
+    .ai-input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: var(--radius); padding: 10px 14px; font-size: 0.88rem; }
+    .ai-input::placeholder { color: rgba(255,255,255,0.4); }
+    .ai-input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
+    .recent-chats { display: flex; flex-direction: column; gap: 10px; }
+    .chat-preview { background: white; border: 1px solid var(--gray-100); border-radius: var(--radius-lg); padding: 16px; cursor: pointer; transition: var(--transition); }
+    .chat-preview:hover { box-shadow: var(--shadow); border-color: var(--gray-200); }
+    .chat-preview-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .chat-preview-name { font-weight: 600; font-size: 0.92rem; color: var(--navy); flex: 1; }
+    .chat-preview-time { font-size: 0.75rem; color: var(--text-muted); }
+    .chat-preview-msg { font-size: 0.83rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link active" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="search.html"><span class="link-icon">🔍</span> Find Teachers</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> My Chats <span class="link-badge" id="unreadCount" style="display:none">0</span></a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Subscription</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+          <div class="sidebar-user-role" id="sidebarPlan">Free Plan</div>
+        </div>
+        <span style="cursor:pointer;color:var(--text-muted);font-size:1.1rem" onclick="doLogout()" title="Logout">⏻</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner animate-fadeInDown">
+      <h2>Welcome back, <span id="welcomeName">Student</span> 👋</h2>
+      <p>Find your perfect teacher or continue a conversation below.</p>
+      <a href="search.html" class="btn btn-lg" style="background:white;color:var(--primary)">🔍 Find Teachers Near You</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid animate-fadeInUp">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:rgba(26,115,232,0.1)">💬</div>
+        <div class="stat-card-value" id="totalChats">0</div>
+        <div class="stat-card-label">Active Chats</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">✅</div>
+        <div class="stat-card-value" id="unlockedChats">0</div>
+        <div class="stat-card-label">Unlocked Conversations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)">⭐</div>
+        <div class="stat-card-value" id="planBadge">Free</div>
+        <div class="stat-card-label">Current Plan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:rgba(13,27,75,0.08)">📍</div>
+        <div class="stat-card-value" id="nearbyCount">—</div>
+        <div class="stat-card-label">Teachers Near You</div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Left: Recent Chats -->
+      <div>
+        <div class="section-header">
+          <h3>Recent Conversations</h3>
+          <a href="chats.html" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="recent-chats" id="recentChats">
+          <!-- Skeleton loaders -->
+          <div style="background:white;border-radius:var(--radius-lg);padding:16px;border:1px solid var(--gray-100)">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div class="skeleton skeleton-circle" style="width:44px;height:44px"></div>
+              <div style="flex:1"><div class="skeleton skeleton-text w-75"></div><div class="skeleton skeleton-text w-50"></div></div>
+            </div>
+          </div>
+          <div style="background:white;border-radius:var(--radius-lg);padding:16px;border:1px solid var(--gray-100)">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div class="skeleton skeleton-circle" style="width:44px;height:44px"></div>
+              <div style="flex:1"><div class="skeleton skeleton-text w-90"></div><div class="skeleton skeleton-text w-50"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upgrade CTA if free -->
+        <div id="upgradeCta" class="card hidden" style="margin-top:20px;background:linear-gradient(135deg,#f0f7ff,white);border:1.5px solid rgba(26,115,232,0.2)">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-size:2rem">✦</div>
+            <div style="flex:1">
+              <h4 style="color:var(--navy);margin-bottom:4px">Unlock LeUHaute™ Scores</h4>
+              <p style="font-size:0.85rem;margin:0">Upgrade to Pro to see AI teacher intelligence scores and make smarter choices.</p>
+            </div>
+            <a href="subscription.html" class="btn btn-primary btn-sm" style="white-space:nowrap">Go Pro →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: AI Assistant -->
+      <div>
+        <div class="section-header">
+          <h3>AI Assistant</h3>
+          <span class="badge badge-primary">✦ Powered by AI</span>
+        </div>
+        <div class="ai-assistant-box">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,166,35,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem">🤖</div>
+            <div>
+              <div style="font-weight:700;font-size:0.9rem">LaTAFU AI</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5)">Always here to help</div>
+            </div>
+            <div style="margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--success)"></div>
+          </div>
+          <div class="ai-chat-history" id="aiChatHistory">
+            <div class="chat-bubble ai">
+              👋 Hi! I'm your LaTAFU AI assistant. I can help you find the right teacher, answer subject questions, or guide you through the platform. What do you need?
+            </div>
+          </div>
+          <div class="ai-input-row">
+            <input class="ai-input" id="aiInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendAI()">
+            <button class="btn btn-primary btn-icon" onclick="sendAI()">→</button>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="margin-top:20px">
+          <div class="section-header"><h3>Quick Actions</h3></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <a href="search.html" class="btn btn-outline w-full" style="justify-content:flex-start;gap:10px">📍 Find Teachers Near Me</a>
+            <a href="search.html?filter=top" class="btn btn-ghost w-full" style="justify-content:flex-start;gap:10px">✦ Top Rated Teachers</a>
+            <a href="subscription.html" class="btn btn-ghost w-full" style="justify-content:flex-start;gap:10px" id="proBtn">⭐ Upgrade to Pro</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { requireStudentAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { askStudentAssistant } from '../js/ai/router.js';
+
+  requireStudentAuth();
+
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name') || 'Student';
+  document.getElementById('welcomeName').textContent = name.split(' ')[0];
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+
+  // Load profile
+  async function loadDashboard() {
+    const profile = await getProfile(uid, 'student');
+    if (!profile) return;
+
+    const isPro = profile.subscription === 'pro';
+    document.getElementById('planBadge').textContent = isPro ? 'Pro' : 'Free';
+    document.getElementById('sidebarPlan').textContent = isPro ? '⭐ Pro Plan' : 'Free Plan';
+    if (!isPro) document.getElementById('upgradeCta').classList.remove('hidden');
+    if (isPro) document.getElementById('proBtn').style.display = 'none';
+
+    // Load chats
+    try {
+      const chatsQ = query(collection(db, 'chats'), where('studentUid', '==', uid), orderBy('updatedAt', 'desc'), limit(5));
+      const snap = await getDocs(chatsQ);
+      const chats = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      document.getElementById('totalChats').textContent = chats.length;
+      document.getElementById('unlockedChats').textContent = chats.filter(c => c.unlocked).length;
+      renderRecentChats(chats);
+      const unread = chats.filter(c => c.unreadStudent > 0).length;
+      if (unread > 0) { document.getElementById('unreadCount').textContent = unread; document.getElementById('unreadCount').style.display = 'inline'; }
+    } catch { renderRecentChats([]); }
+
+    // Nearby count
+    if (profile.location?.lat) {
+      try {
+        const tSnap = await getDocs(collection(db, 'teachers'));
+        const nearby = tSnap.docs.filter(d => {
+          const t = d.data();
+          if (!t.location?.lat) return false;
+          const dist = getDistance(profile.location.lat, profile.location.lng, t.location.lat, t.location.lng);
+          return dist <= 50;
+        });
+        document.getElementById('nearbyCount').textContent = nearby.length;
+      } catch {}
+    }
+  }
+
+  function renderRecentChats(chats) {
+    const container = document.getElementById('recentChats');
+    if (!chats.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><h3>No conversations yet</h3><p>Find a teacher to start chatting</p><a href="search.html" class="btn btn-primary btn-sm" style="margin-top:12px">Find Teachers</a></div>`;
+      return;
+    }
+    container.innerHTML = chats.map(c => `
+      <div class="chat-preview" onclick="window.location.href='chat.html?chatId=${c.id}'">
+        <div class="chat-preview-header">
+          <div class="avatar avatar-sm" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(c.teacherName||'T').charAt(0)}</div>
+          <span class="chat-preview-name">${c.teacherName || 'Teacher'}</span>
+          ${c.unreadStudent > 0 ? '<div class="unread-dot"></div>' : ''}
+          <span class="chat-preview-time">${formatTime(c.updatedAt)}</span>
+        </div>
+        <div class="chat-preview-msg">${c.lastMessage || 'No messages yet'}</div>
+        ${!c.unlocked && c.messageCount >= 10 ? '<div style="margin-top:6px"><span class="badge badge-primary" style="font-size:0.7rem">🔒 Unlock to continue</span></div>' : ''}
+      </div>
+    `).join('');
+  }
+
+  function getDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; const dLat = (lat2-lat1)*Math.PI/180; const dLng = (lng2-lng1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function formatTime(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const diff = Date.now() - d.getTime();
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+    return d.toLocaleDateString();
+  }
+
+  // AI Assistant
+  window.sendAI = async function() {
+    const input = document.getElementById('aiInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    const history = document.getElementById('aiChatHistory');
+    history.innerHTML += `<div class="chat-bubble sent">${msg}</div>`;
+    history.innerHTML += `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+    history.scrollTop = history.scrollHeight;
+    const reply = await askStudentAssistant(msg, { studentName: name });
+    history.querySelector('.typing-indicator')?.remove();
+    history.innerHTML += `<div class="chat-bubble ai">${reply || "I'm having trouble connecting. Please try again."}</div>`;
+    history.scrollTop = history.scrollHeight;
+  };
+
+  window.doLogout = async function() {
+    await logout();
+  };
+
+  loadDashboard();
+</script>
+</body>
+</html>

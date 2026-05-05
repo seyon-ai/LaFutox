@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeUHaute™ Interview — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--navy);min-height:100vh}
+    .lh-layout{display:flex;height:100vh}
+    .lh-sidebar{width:260px;flex-shrink:0}
+    .lh-main{flex:1;display:flex;flex-direction:column;height:100vh;background:var(--gray-50)}
+    .lh-header{background:linear-gradient(135deg,var(--navy),#1a3a7a);padding:28px 32px;flex-shrink:0}
+    .lh-header-top{display:flex;align-items:center;gap:16px;margin-bottom:4px}
+    .lh-title{font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--gold)}
+    .lh-subtitle{color:rgba(255,255,255,0.6);font-size:0.85rem}
+    .lh-progress-bar{height:4px;background:rgba(255,255,255,0.15);border-radius:99px;margin-top:16px;overflow:hidden}
+    .lh-progress-fill{height:100%;background:var(--gold);border-radius:99px;transition:width 0.5s ease}
+    .lh-progress-label{display:flex;justify-content:space-between;margin-top:6px;font-size:0.75rem;color:rgba(255,255,255,0.5)}
+    .chat-area{flex:1;overflow-y:auto;padding:24px 32px;display:flex;flex-direction:column;gap:14px}
+    .lh-bubble{max-width:80%;padding:14px 18px;border-radius:18px;font-size:0.92rem;line-height:1.6}
+    .lh-bubble.ai{background:white;color:var(--text);border-bottom-left-radius:4px;border:1px solid var(--gray-100);box-shadow:var(--shadow-sm)}
+    .lh-bubble.ai .ai-label{font-size:0.72rem;color:var(--gold);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+    .lh-bubble.teacher{background:var(--primary);color:white;border-bottom-right-radius:4px;margin-left:auto}
+    .lh-input-area{padding:20px 32px;background:white;border-top:1px solid var(--gray-100);flex-shrink:0}
+    .lh-input-row{display:flex;gap:12px;align-items:flex-end}
+    .lh-input{flex:1;padding:12px 18px;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);font-size:0.92rem;resize:none;min-height:48px;max-height:120px;line-height:1.5}
+    .lh-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(245,166,35,0.1)}
+    .lh-input:disabled{background:var(--gray-50);cursor:not-allowed}
+    .lh-send{width:48px;height:48px;border-radius:50%;background:var(--gold);color:white;border:none;cursor:pointer;font-size:1.1rem;transition:var(--transition);flex-shrink:0}
+    .lh-send:hover{background:#e09520}
+    .lh-send:disabled{background:var(--gray-200);cursor:not-allowed}
+    .intro-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:48px 32px;text-align:center}
+    .intro-icon{font-size:4rem;margin-bottom:20px;animation:float 3s ease-in-out infinite}
+    .intro-screen h2{color:var(--navy);margin-bottom:12px}
+    .intro-screen p{color:var(--text-muted);max-width:480px;margin-bottom:32px;line-height:1.7}
+    .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:32px;width:100%;max-width:600px}
+    .rule-card{background:white;border-radius:var(--radius-lg);padding:16px;border:1px solid var(--gray-100);text-align:left}
+    .rule-icon{font-size:1.4rem;margin-bottom:8px}
+    .rule-title{font-weight:600;font-size:0.85rem;color:var(--navy);margin-bottom:4px}
+    .rule-desc{font-size:0.78rem;color:var(--text-muted)}
+    .score-screen{display:flex;flex-direction:column;align-items:center;padding:40px 32px;overflow-y:auto}
+    .score-screen h2{color:var(--navy);margin-bottom:8px}
+    .score-card{background:linear-gradient(135deg,var(--navy),#1a3a7a);border-radius:var(--radius-xl);padding:36px;color:white;width:100%;max-width:500px;margin:24px 0}
+    @media(max-width:900px){.lh-sidebar{display:none}.chat-area,.lh-input-area{padding:16px}}
+  </style>
+</head>
+<body>
+<div class="lh-layout">
+  <aside class="lh-sidebar sidebar" style="background:white">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> Student Chats</a>
+        <a class="sidebar-link" href="earnings.html"><span class="link-icon">💰</span> Earnings</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Profile</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link active" href="leuhaufe.html"><span class="link-icon">✦</span> LeUHaute™</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Teacher Plus</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">T</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarName">Teacher</div><div class="sidebar-user-role">Teacher</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="lh-main">
+    <!-- Header -->
+    <div class="lh-header">
+      <div class="lh-header-top">
+        <div style="font-size:1.5rem">✦</div>
+        <div>
+          <div class="lh-title">LeUHaute™ AI Interview</div>
+          <div class="lh-subtitle">AI-powered teacher intelligence assessment</div>
+        </div>
+        <div id="headerScore" style="margin-left:auto;display:none">
+          <span style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:var(--gold)" id="liveScore">0</span>
+          <span style="color:rgba(255,255,255,0.4);font-size:0.9rem">/100</span>
+        </div>
+      </div>
+      <div class="lh-progress-bar"><div class="lh-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="lh-progress-label"><span id="progressLabel">Not started</span><span id="progressNum">0/10 questions</span></div>
+    </div>
+
+    <!-- INTRO SCREEN -->
+    <div id="introScreen" class="intro-screen">
+      <div class="intro-icon">🎓</div>
+      <h2>Welcome to LeUHaute™</h2>
+      <p>You're about to be interviewed by LaTAFU's AI to receive your teaching intelligence score. Answer honestly and thoroughly — the AI evaluates depth, not just correctness. This takes about 10–15 minutes.</p>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-icon">❓</div><div class="rule-title">10 Questions</div><div class="rule-desc">Deep questions about your teaching style and expertise</div></div>
+        <div class="rule-card"><div class="rule-icon">📊</div><div class="rule-title">5 Dimensions</div><div class="rule-desc">Scored on Clarity, Mastery, Patience, Problem Solving, Communication</div></div>
+        <div class="rule-card"><div class="rule-icon">👁️</div><div class="rule-title">Pro Students See It</div><div class="rule-desc">Your score is visible to Pro subscribers looking for teachers</div></div>
+        <div class="rule-card"><div class="rule-icon">🔄</div><div class="rule-title">90-Day Refresh</div><div class="rule-desc">Re-evaluated every 90 days to keep scores current</div></div>
+      </div>
+      <button class="btn btn-gold btn-xl" onclick="startInterview()">Begin LeUHaute™ Interview →</button>
+    </div>
+
+    <!-- CHAT SCREEN (hidden) -->
+    <div id="chatScreen" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+      <div class="chat-area" id="chatArea"></div>
+      <div class="lh-input-area">
+        <div class="lh-input-row">
+          <textarea class="lh-input" id="lhInput" placeholder="Type your answer here..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAnswer()}"></textarea>
+          <button class="lh-send" id="lhSend" onclick="sendAnswer()">➤</button>
+        </div>
+        <div style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:8px">Answer thoroughly — the AI reads your entire response</div>
+      </div>
+    </div>
+
+    <!-- SCORE SCREEN (hidden) -->
+    <div id="scoreScreen" style="display:none;flex:1;overflow-y:auto">
+      <div class="score-screen">
+        <div style="font-size:3rem;margin-bottom:8px;animation:bounceIn 0.6s ease">🎉</div>
+        <h2>Your LeUHaute™ Score Is Ready!</h2>
+        <p style="color:var(--text-muted)">Here's your AI-assessed teaching intelligence profile</p>
+        <div class="score-card animate-scaleIn" id="finalScoreCard">
+          <!-- Filled by JS -->
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+          <a href="dashboard.html" class="btn btn-primary btn-lg">Go to Dashboard</a>
+          <a href="profile.html" class="btn btn-ghost btn-lg">View Profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireTeacherAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { runLeuhaufeInterview, calculateTier } from '../js/ai/router.js';
+
+  requireTeacherAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name')||'Teacher';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+
+  let conversationHistory = [];
+  let questionCount = 0;
+  let teacherProfile = null;
+
+  async function init() {
+    teacherProfile = await getProfile(uid, 'teacher');
+    // If already scored, show score
+    if (teacherProfile?.leuhaufeScore) {
+      showExistingScore(teacherProfile);
+    }
+  }
+
+  function showExistingScore(p) {
+    document.getElementById('introScreen').innerHTML = `
+      <div class="intro-icon">✦</div>
+      <h2 style="color:var(--navy)">LeUHaute™ Score Active</h2>
+      <p style="color:var(--text-muted)">Your current score — refreshes every 90 days</p>
+      <div style="background:linear-gradient(135deg,var(--navy),#1a3a7a);border-radius:var(--radius-xl);padding:32px;color:white;width:100%;max-width:480px;margin:20px 0">
+        <div class="leuhaufe-title">✦ LeUHaute™ AI Score</div>
+        <div style="font-family:var(--font-display);font-size:3rem;font-weight:800;color:var(--gold)">${p.leuhaufeScore}<span style="font-size:1rem;color:rgba(255,255,255,0.4)">/100</span></div>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:20px">${p.leuhaufeTier||''} Tier</div>
+        ${renderBars(p.leuhaufeData)}
+        ${p.leuhaufeData?.verdict?`<div class="leuhaufe-verdict">"${p.leuhaufeData.verdict}"</div>`:''}
+      </div>
+      <button class="btn btn-outline-navy" onclick="restartInterview()">Retake Interview</button>
+    `;
+  }
+
+  function renderBars(data) {
+    if (!data?.scores) return '';
+    const items = [['Teaching Clarity',data.scores.teachingClarity],['Subject Mastery',data.scores.subjectMastery],['Student Patience',data.scores.studentPatience],['Problem Solving',data.scores.problemSolvingStyle],['Communication',data.scores.communicationQuality]];
+    return `<div class="leuhaufe-bars">${items.map(([l,v])=>v?`<div class="leuhaufe-bar-row"><div class="leuhaufe-bar-label">${l}</div><div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${v}%"></div></div><div class="leuhaufe-bar-val">${v}%</div></div>`:'').join('')}</div>`;
+  }
+
+  window.restartInterview = function() {
+    conversationHistory = [];
+    questionCount = 0;
+    document.getElementById('chatArea').innerHTML = '';
+    document.getElementById('introScreen').style.display = 'flex';
+    document.getElementById('chatScreen').style.display = 'none';
+  };
+
+  window.startInterview = async function() {
+    document.getElementById('introScreen').style.display = 'none';
+    document.getElementById('chatScreen').style.display = 'flex';
+    document.getElementById('chatScreen').style.flexDirection = 'column';
+    setLoading(true);
+
+    const result = await runLeuhaufeInterview(teacherProfile, []);
+    setLoading(false);
+    if (result.message) {
+      addMessage('ai', result.message);
+      conversationHistory.push({ role: 'assistant', content: result.message });
+    }
+  };
+
+  window.sendAnswer = async function() {
+    const input = document.getElementById('lhInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addMessage('teacher', text);
+    conversationHistory.push({ role: 'user', content: text });
+    questionCount++;
+    updateProgress();
+    setLoading(true);
+
+    const result = await runLeuhaufeInterview(teacherProfile, conversationHistory);
+    setLoading(false);
+
+    if (result.done) {
+      showFinalScore(result.data);
+    } else {
+      addMessage('ai', result.message);
+      conversationHistory.push({ role: 'assistant', content: result.message });
+    }
+  };
+
+  function addMessage(role, text) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = `animate-fadeInUp`;
+    div.style.display = 'flex';
+    div.style.flexDirection = role === 'teacher' ? 'row-reverse' : 'row';
+    div.innerHTML = `<div class="lh-bubble ${role}">
+      ${role==='ai'?'<div class="ai-label">✦ LeUHaute™ AI</div>':''}
+      ${text}
+    </div>`;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function setLoading(state) {
+    document.getElementById('lhInput').disabled = state;
+    document.getElementById('lhSend').disabled = state;
+    if (state) {
+      const area = document.getElementById('chatArea');
+      const loader = document.createElement('div');
+      loader.id = 'aiLoader';
+      loader.style.display = 'flex';
+      loader.innerHTML = `<div class="lh-bubble ai"><div class="ai-label">✦ LeUHaute™ AI</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+      area.appendChild(loader);
+      area.scrollTop = area.scrollHeight;
+    } else {
+      document.getElementById('aiLoader')?.remove();
+    }
+  }
+
+  function updateProgress() {
+    const pct = (questionCount/10)*100;
+    document.getElementById('progressFill').style.width = `${pct}%`;
+    document.getElementById('progressNum').textContent = `${questionCount}/10 questions`;
+    document.getElementById('progressLabel').textContent = questionCount < 4 ? 'Getting started...' : questionCount < 7 ? 'Going deeper...' : questionCount < 10 ? 'Almost done...' : 'Wrapping up...';
+    document.getElementById('headerScore').style.display = 'block';
+  }
+
+  async function showFinalScore(data) {
+    document.getElementById('chatScreen').style.display = 'none';
+    document.getElementById('scoreScreen').style.display = 'block';
+
+    const { tier, emoji } = calculateTier(data.overall);
+
+    document.getElementById('finalScoreCard').innerHTML = `
+      <div class="leuhaufe-title">✦ LeUHaute™ AI Score</div>
+      <div style="font-family:var(--font-display);font-size:3.5rem;font-weight:800;color:var(--gold);line-height:1">${data.overall}<span style="font-size:1.1rem;color:rgba(255,255,255,0.4)">/100</span></div>
+      <div style="font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:24px">${emoji} ${tier.toUpperCase()} TIER</div>
+      <div class="leuhaufe-bars">
+        <div class="leuhaufe-bar-row"><div class="leuhaufe-bar-label">Teaching Clarity</div><div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${data.scores.teachingClarity}%"></div></div><div class="leuhaufe-bar-val">${data.scores.teachingClarity}%</div></div>
+        <div class="leuhaufe-bar-row"><div class="leuhaufe-bar-label">Subject Mastery</div><div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${data.scores.subjectMastery}%"></div></div><div class="leuhaufe-bar-val">${data.scores.subjectMastery}%</div></div>
+        <div class="leuhaufe-bar-row"><div class="leuhaufe-bar-label">Student Patience</div><div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${data.scores.studentPatience}%"></div></div><div class="leuhaufe-bar-val">${data.scores.studentPatience}%</div></div>
+        <div class="leuhaufe-bar-row"><div class="leuhaufe-bar-label">Problem Solving</div><div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${data.scores.problemSolvingStyle}%"></div></div><div class="leuhaufe-bar-val">${data.scores.problemSolvingStyle}%</div></div>
+        <div class="leuhaufe-bar-row"><div class="leuhaufe-bar-label">Communication</div><div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${data.scores.communicationQuality}%"></div></div><div class="leuhaufe-bar-val">${data.scores.communicationQuality}%</div></div>
+      </div>
+      <div class="leuhaufe-verdict">"${data.verdict}"</div>
+    `;
+
+    // Save to Firestore
+    await updateDoc(doc(db, 'teachers', uid), {
+      leuhaufeScore: data.overall,
+      leuhaufeTier: tier,
+      leuhaufeData: { scores: data.scores, verdict: data.verdict },
+      leuhaufeLastRun: serverTimestamp()
+    });
+
+    // Send email
+    await fetch('/api/send-email', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: 'leuhaufe_complete', to: teacherProfile.email, name: teacherProfile.name, data: { score: data.overall, tier, verdict: data.verdict } })
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .login-wrap { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; width: 100%; max-width: 1000px; background: white; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-lg); }
+    .login-left { background: linear-gradient(160deg, #0D1B4B 0%, #1a3a7a 100%); padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+    .login-left::after { content: ''; position: absolute; bottom: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(26,115,232,0.15); }
+    .login-logo { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 48px; }
+    .login-logo span { color: #4A9EFF; }
+    .login-left h2 { color: white; font-size: 2.2rem; margin-bottom: 16px; }
+    .login-left p { color: rgba(255,255,255,0.6); line-height: 1.7; }
+    .login-right { padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; }
+    .login-right h3 { font-size: 1.6rem; color: var(--navy); margin-bottom: 6px; }
+    .login-right .sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px; }
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .forgot-link { font-size: 0.83rem; color: var(--primary); font-weight: 500; text-align: right; cursor: pointer; }
+    .divider-text { text-align: center; color: var(--text-muted); font-size: 0.82rem; position: relative; }
+    .divider-text::before, .divider-text::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--gray-100); }
+    .divider-text::before { left: 0; } .divider-text::after { right: 0; }
+    .auth-footer { margin-top: 20px; text-align: center; font-size: 0.88rem; color: var(--text-muted); }
+    .auth-footer a { color: var(--primary); font-weight: 600; }
+    @media (max-width: 768px) { .login-wrap { grid-template-columns: 1fr; } .login-left { display: none; } .login-right { padding: 40px 28px; } }
+  </style>
+</head>
+<body>
+<div class="login-wrap animate-scaleIn">
+  <div class="login-left">
+    <div class="login-logo">La<span>TAFU</span></div>
+    <h2>Welcome Back,<br>Learner 👋</h2>
+    <p>Continue your journey with AI-powered teacher discovery and smarter learning.</p>
+  </div>
+  <div class="login-right">
+    <h3>Student Login</h3>
+    <p class="sub">Don't have an account? <a href="student-signup.html">Sign up free</a></p>
+    <div class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-group"><span class="input-icon">✉️</span><input type="email" class="form-input" id="email" placeholder="you@email.com"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-group input-group-right">
+          <input type="password" class="form-input" id="password" placeholder="Your password" style="padding-left:16px">
+          <span class="input-icon" id="togglePwd" style="cursor:pointer">👁️</span>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:4px"><span class="forgot-link" onclick="handleReset()">Forgot password?</span></div>
+      </div>
+      <div class="alert alert-danger hidden" id="errorMsg"></div>
+      <button class="btn btn-primary btn-lg w-full" id="loginBtn" onclick="handleLogin()">
+        <span class="btn-text">Log In →</span>
+      </button>
+    </div>
+    <div style="margin:20px 0"><div class="divider-text">or</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a href="teacher-login.html" class="btn btn-ghost w-full">Login as Teacher</a>
+      <a href="admin-login.html" class="btn btn-ghost w-full" style="font-size:0.8rem;color:var(--text-muted)">Admin Login</a>
+    </div>
+    <div class="auth-footer">New to LaTAFU? <a href="student-signup.html">Create free account</a></div>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script type="module">
+  import { loginUser } from '../js/auth.js';
+
+  window.handleLogin = async function() {
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('errorMsg');
+    err.classList.add('hidden');
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    if (!email || !password) { err.textContent = 'Please enter your email and password.'; err.classList.remove('hidden'); return; }
+    btn.classList.add('btn-loading'); btn.disabled = true;
+    try {
+      await loginUser(email, password, 'student');
+      window.location.href = '../student/dashboard.html';
+    } catch(e) {
+      err.textContent = e.message || 'Login failed.';
+      err.classList.remove('hidden');
+      btn.classList.remove('btn-loading'); btn.disabled = false;
+    }
+  };
+
+  window.handleReset = async function() {
+    const email = document.getElementById('email').value.trim();
+    if (!email) { alert('Please enter your email address first.'); return; }
+    try {
+      const { resetPassword } = await import('../js/auth.js');
+      await resetPassword(email);
+      alert('Password reset email sent! Check your inbox.');
+    } catch(e) { alert(e.message); }
+  };
+
+  document.getElementById('togglePwd').addEventListener('click', () => {
+    const pwd = document.getElementById('password');
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+</script>
+</body>
+</html>

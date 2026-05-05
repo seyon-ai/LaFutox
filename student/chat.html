@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); overflow: hidden; }
+    .chat-layout { display: flex; height: 100vh; }
+    .chat-sidebar { width: 260px; flex-shrink: 0; }
+    .chat-main { flex: 1; display: flex; flex-direction: column; height: 100vh; background: white; }
+    .chat-header { padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 14px; background: white; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+    .chat-header-info { flex: 1; }
+    .chat-header-name { font-family: var(--font-display); font-weight: 700; color: var(--navy); font-size: 1rem; }
+    .chat-header-status { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .online-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    .ai-monitor-bar { background: rgba(26,115,232,0.05); border-bottom: 1px solid rgba(26,115,232,0.1); padding: 7px 24px; display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--primary); font-weight: 500; flex-shrink: 0; }
+    .messages-area { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+    .msg-row { display: flex; align-items: flex-end; gap: 8px; }
+    .msg-row.sent { flex-direction: row-reverse; }
+    .msg-time { font-size: 0.68rem; color: var(--text-muted); margin: 0 4px; }
+    .chat-input-area { padding: 16px 24px; border-top: 1px solid var(--gray-100); background: white; flex-shrink: 0; }
+    .msg-count-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; }
+    .msg-count-label { color: var(--text-muted); }
+    .msg-count-num { font-weight: 700; color: var(--navy); }
+    .msg-progress { flex: 1; height: 4px; background: var(--gray-100); border-radius: 99px; margin: 0 12px; overflow: hidden; }
+    .msg-progress-fill { height: 100%; border-radius: 99px; background: var(--primary); transition: width 0.4s ease; }
+    .msg-progress-fill.warning { background: var(--warning); }
+    .msg-progress-fill.danger { background: var(--danger); }
+    .input-row { display: flex; gap: 10px; align-items: flex-end; }
+    .msg-input { flex: 1; padding: 12px 16px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-lg); font-size: 0.92rem; resize: none; min-height: 44px; max-height: 120px; line-height: 1.5; transition: var(--transition); }
+    .msg-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(26,115,232,0.08); }
+    .msg-input:disabled { background: var(--gray-50); color: var(--text-muted); cursor: not-allowed; }
+    .send-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: var(--transition); flex-shrink: 0; border: none; }
+    .send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
+    .send-btn:disabled { background: var(--gray-200); cursor: not-allowed; transform: none; }
+    .ai-warning { background: rgba(255,165,2,0.1); border: 1px solid rgba(255,165,2,0.3); border-radius: var(--radius); padding: 10px 14px; font-size: 0.82rem; color: #a06000; margin-top: 8px; display: none; }
+    .ai-warning.show { display: flex; align-items: flex-start; gap: 8px; }
+    .date-separator { text-align: center; margin: 8px 0; }
+    .date-separator span { background: var(--gray-100); color: var(--text-muted); font-size: 0.75rem; padding: 4px 12px; border-radius: 99px; }
+    .system-msg { text-align: center; font-size: 0.78rem; color: var(--text-muted); padding: 4px 0; }
+    @media(max-width:900px) { .chat-sidebar { display: none; } }
+  </style>
+</head>
+<body>
+<div class="chat-layout">
+  <!-- SIDEBAR -->
+  <aside class="chat-sidebar sidebar" id="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="search.html"><span class="link-icon">🔍</span> Find Teachers</a>
+        <a class="sidebar-link active" href="chats.html"><span class="link-icon">💬</span> My Chats</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Subscription</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">S</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Student</div>
+          <div class="sidebar-user-role">Student</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CHAT MAIN -->
+  <div class="chat-main">
+    <!-- Header -->
+    <div class="chat-header">
+      <a href="chats.html" class="btn btn-ghost btn-icon-sm" style="font-size:1.1rem">←</a>
+      <div class="avatar avatar-md" id="chatAvatar" style="background:rgba(26,115,232,0.1);color:var(--primary)">T</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name" id="chatTeacherName">Loading...</div>
+        <div class="chat-header-status"><div class="online-dot"></div> <span id="chatTeacherSubject">—</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <a id="viewProfileBtn" href="#" class="btn btn-ghost btn-sm">View Profile</a>
+      </div>
+    </div>
+
+    <!-- AI Monitor Bar -->
+    <div class="ai-monitor-bar">
+      <span>🤖</span>
+      <span>AI Monitor Active — keeping your conversation safe</span>
+      <span style="margin-left:auto;opacity:0.6" id="monitorStatus">Monitoring</span>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+      <div class="system-msg">Conversation started — first 10 messages are free</div>
+    </div>
+
+    <!-- Payment Gate (hidden until 10 messages) -->
+    <div class="payment-gate hidden" id="paymentGate" style="margin:16px 24px">
+      <div class="payment-gate-icon">🔒</div>
+      <h3>Unlock Full Conversation</h3>
+      <p>You've reached the 10 free message limit. Unlock this conversation for just <strong>$1.99</strong> to continue chatting freely with this teacher.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="unlockChat()">💳 Unlock for $1.99</button>
+        <a href="search.html" class="btn btn-ghost">Find Another Teacher</a>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <div class="msg-count-bar" id="countBar">
+        <span class="msg-count-label">Free messages</span>
+        <div class="msg-progress"><div class="msg-progress-fill" id="progressFill" style="width:0%"></div></div>
+        <span class="msg-count-num"><span id="msgCount">0</span>/10</span>
+      </div>
+      <div class="input-row">
+        <textarea class="msg-input" id="msgInput" placeholder="Type your message..." rows="1" onkeydown="handleEnter(event)" oninput="checkAI(this.value)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="ai-warning" id="aiWarning">
+        <span>⚠️</span>
+        <span id="aiWarningText">Message blocked by AI monitor</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireStudentAuth, getStoredUid } from '../js/auth.js';
+  import { db, rtdb } from '../js/firebase-config.js';
+  import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { ref, push, onChildAdded, serverTimestamp as rtTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { monitorMessage } from '../js/ai/router.js';
+
+  requireStudentAuth();
+  const uid = getStoredUid();
+  const sName = localStorage.getItem('latfu_name') || 'Student';
+  document.getElementById('sidebarName').textContent = sName;
+  document.getElementById('sidebarAvatar').textContent = sName.charAt(0);
+
+  const params = new URLSearchParams(location.search);
+  const chatId = params.get('chatId');
+  if (!chatId) window.location.href = 'chats.html';
+
+  let chatData = null;
+  let isUnlocked = false;
+  let messageCount = 0;
+  let aiCheckTimeout = null;
+  let lastBlockedMessage = '';
+
+  // Check unlock success from URL
+  if (params.get('unlocked') === 'true') {
+    updateDoc(doc(db, 'chats', chatId), { unlocked: true });
+  }
+
+  async function loadChat() {
+    const snap = await getDoc(doc(db, 'chats', chatId));
+    if (!snap.exists()) { window.location.href = 'chats.html'; return; }
+    chatData = snap.data();
+    isUnlocked = chatData.unlocked || false;
+    messageCount = chatData.messageCount || 0;
+
+    // Load teacher profile
+    const tSnap = await getDoc(doc(db, 'teachers', chatData.teacherUid));
+    const teacher = tSnap.data() || {};
+    document.getElementById('chatTeacherName').textContent = chatData.teacherName || teacher.name || 'Teacher';
+    document.getElementById('chatTeacherSubject').textContent = (teacher.subjects||[]).join(', ') || 'Teacher';
+    document.getElementById('chatAvatar').textContent = (chatData.teacherName||'T').charAt(0);
+    document.getElementById('viewProfileBtn').href = `teacher-view.html?id=${chatData.teacherUid}`;
+
+    updateCountBar();
+    if (!isUnlocked && messageCount >= 10) showPaymentGate();
+
+    // Listen to messages
+    const msgsRef = ref(rtdb, `chats/${chatId}/messages`);
+    onChildAdded(msgsRef, (snap) => {
+      const msg = snap.val();
+      renderMessage(msg);
+    });
+  }
+
+  function renderMessage(msg) {
+    const area = document.getElementById('messagesArea');
+    const isSent = msg.senderUid === uid;
+    const isAI = msg.senderUid === 'ai';
+    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+
+    const div = document.createElement('div');
+    div.className = `msg-row ${isSent ? 'sent' : ''} animate-fadeInUp`;
+    div.innerHTML = `
+      ${!isSent && !isAI ? `<div class="avatar avatar-sm" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(chatData?.teacherName||'T').charAt(0)}</div>` : ''}
+      <div class="chat-bubble ${isSent ? 'sent' : isAI ? 'ai' : 'received'}">
+        ${isAI ? '<div style="font-size:0.7rem;color:var(--gold);font-weight:600;margin-bottom:4px">🤖 AI Assistant</div>' : ''}
+        ${msg.text}
+        <div class="chat-time">${timeStr}</div>
+      </div>`;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function updateCountBar() {
+    const pct = Math.min((messageCount / 10) * 100, 100);
+    document.getElementById('progressFill').style.width = `${pct}%`;
+    document.getElementById('msgCount').textContent = messageCount;
+    const fill = document.getElementById('progressFill');
+    fill.className = `msg-progress-fill ${messageCount >= 8 ? 'danger' : messageCount >= 6 ? 'warning' : ''}`;
+    if (isUnlocked) {
+      document.getElementById('countBar').innerHTML = `<span style="color:var(--success);font-weight:600;font-size:0.82rem">✅ Conversation unlocked — chat freely</span>`;
+    }
+  }
+
+  function showPaymentGate() {
+    document.getElementById('paymentGate').classList.remove('hidden');
+    document.getElementById('msgInput').disabled = true;
+    document.getElementById('sendBtn').disabled = true;
+  }
+
+  // Debounced AI check as user types
+  window.checkAI = function(text) {
+    clearTimeout(aiCheckTimeout);
+    document.getElementById('aiWarning').classList.remove('show');
+    if (!text.trim()) return;
+    aiCheckTimeout = setTimeout(async () => {
+      const result = await monitorMessage(text, { role: 'student', chatId });
+      if (!result.safe) {
+        document.getElementById('aiWarningText').textContent = result.suggestion || 'This message may contain contact info. Please keep communication on LaTAFU.';
+        document.getElementById('aiWarning').classList.add('show');
+        lastBlockedMessage = text;
+        document.getElementById('monitorStatus').textContent = '⚠️ Flagged';
+        setTimeout(() => { document.getElementById('monitorStatus').textContent = 'Monitoring'; }, 3000);
+      }
+    }, 600);
+  };
+
+  window.handleEnter = function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  window.sendMessage = async function() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Block if AI flagged
+    if (text === lastBlockedMessage) {
+      document.getElementById('aiWarning').classList.add('show');
+      return;
+    }
+
+    // Final AI check before sending
+    const monitor = await monitorMessage(text, { role: 'student', chatId });
+    if (!monitor.safe) {
+      document.getElementById('aiWarningText').textContent = monitor.suggestion || 'Message blocked — contains contact information.';
+      document.getElementById('aiWarning').classList.add('show');
+      return;
+    }
+
+    if (!isUnlocked && messageCount >= 10) { showPaymentGate(); return; }
+
+    input.value = '';
+    document.getElementById('aiWarning').classList.remove('show');
+
+    // Push to RTDB
+    const msgsRef = ref(rtdb, `chats/${chatId}/messages`);
+    await push(msgsRef, {
+      text, senderUid: uid, senderName: sName,
+      role: 'student', timestamp: Date.now()
+    });
+
+    // Update Firestore chat meta
+    messageCount++;
+    await updateDoc(doc(db, 'chats', chatId), {
+      lastMessage: text, messageCount,
+      unreadTeacher: (chatData.unreadTeacher||0) + 1,
+      updatedAt: serverTimestamp()
+    });
+    updateCountBar();
+    if (!isUnlocked && messageCount >= 10) showPaymentGate();
+  };
+
+  window.unlockChat = async function() {
+    const res = await fetch('/api/stripe-checkout', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: 'chat_unlock', studentUid: uid, teacherUid: chatData.teacherUid, chatId })
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+  };
+
+  loadChat();
+</script>
+</body>
+</html>

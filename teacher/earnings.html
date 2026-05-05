@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earnings — LaTAFU Teacher</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .earnings-hero{background:linear-gradient(135deg,var(--success),#00a878);border-radius:var(--radius-xl);padding:36px;color:white;margin-bottom:28px}
+    .earnings-hero h2{color:white;font-size:1.4rem;margin-bottom:4px}
+    .earnings-total{font-family:var(--font-display);font-size:3rem;font-weight:800;color:white;line-height:1;margin-bottom:8px}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:28px}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> Student Chats</a>
+        <a class="sidebar-link active" href="earnings.html"><span class="link-icon">💰</span> Earnings</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Profile</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="leuhaufe.html"><span class="link-icon">✦</span> LeUHaute™</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Teacher Plus</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">T</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarName">Teacher</div><div class="sidebar-user-role">Teacher</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="earnings-hero animate-fadeInDown">
+      <h2>Total Earnings</h2>
+      <div class="earnings-total" id="totalEarnings">₹0</div>
+      <p style="color:rgba(255,255,255,0.75);font-size:0.88rem">From chat unlocks by your students</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">💰</div><div class="stat-card-value" id="thisMonth">₹0</div><div class="stat-card-label">This Month</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(26,115,232,0.1)">🔓</div><div class="stat-card-value" id="totalUnlocks">0</div><div class="stat-card-label">Conversations Unlocked</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(245,166,35,0.1)">⭐</div><div class="stat-card-value" id="avgRating">—</div><div class="stat-card-label">Avg Rating</div></div>
+    </div>
+    <div class="card">
+      <h4 style="margin-bottom:16px">Payment History</h4>
+      <div class="table-wrap" id="paymentsTable">
+        <div class="empty-state" style="padding:32px"><div class="empty-state-icon">💰</div><h3>No payments yet</h3><p>Payments will appear when students unlock your conversations</p></div>
+      </div>
+    </div>
+    <div class="alert alert-info" style="margin-top:20px">
+      ℹ️ LaTAFU collects the chat unlock fee ($1.99) from students. Payments are processed via Stripe and sent to your connected account monthly.
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireTeacherAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireTeacherAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name')||'Teacher';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+
+  async function load() {
+    const [profile, paymentsSnap] = await Promise.all([
+      getProfile(uid,'teacher'),
+      getDocs(query(collection(db,'payments'), where('teacherUid','==',uid)))
+    ]);
+    if (profile?.rating) document.getElementById('avgRating').textContent=(profile.rating||0).toFixed(1)+'★';
+    const payments = paymentsSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const total = payments.reduce((s,p)=>s+(p.amount||0),0);
+    const now = new Date(); const startOfMonth = new Date(now.getFullYear(),now.getMonth(),1);
+    const monthTotal = payments.filter(p=>{const d=p.createdAt?.toDate?.()??new Date(p.createdAt);return d>=startOfMonth;}).reduce((s,p)=>s+(p.amount||0),0);
+    document.getElementById('totalEarnings').textContent='₹'+(total/100).toFixed(0);
+    document.getElementById('thisMonth').textContent='₹'+(monthTotal/100).toFixed(0);
+    document.getElementById('totalUnlocks').textContent=payments.length;
+    if (payments.length) {
+      document.getElementById('paymentsTable').innerHTML=`
+        <table class="table">
+          <thead><tr><th>Student</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>${payments.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(p=>`
+            <tr>
+              <td>${p.studentName||'Student'}</td>
+              <td style="font-weight:600;color:var(--success)">$${((p.amount||0)/100).toFixed(2)}</td>
+              <td style="color:var(--text-muted)">${new Date(p.createdAt?.toDate?.()??p.createdAt).toLocaleDateString()}</td>
+              <td><span class="badge badge-success">Paid</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

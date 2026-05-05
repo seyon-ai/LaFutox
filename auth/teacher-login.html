@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Login — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .login-box { background: white; border-radius: var(--radius-xl); padding: 48px; width: 100%; max-width: 460px; box-shadow: var(--shadow-lg); border: 1px solid var(--gray-100); }
+    .login-logo { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: var(--navy); text-align: center; margin-bottom: 8px; }
+    .login-logo span { color: var(--primary); }
+    .login-sub { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px; }
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .role-badge { display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(26,115,232,0.08); border: 1px solid rgba(26,115,232,0.2); border-radius: var(--radius); padding: 10px; margin-bottom: 8px; font-size: 0.88rem; font-weight: 600; color: var(--primary); }
+  </style>
+</head>
+<body>
+<div class="login-box animate-scaleIn">
+  <div class="login-logo">La<span>TAFU</span></div>
+  <div class="login-sub">Teacher Portal</div>
+  <div class="role-badge">🎓 Logging in as Teacher</div>
+  <div class="auth-form">
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <div class="input-group"><span class="input-icon">✉️</span><input type="email" class="form-input" id="email" placeholder="teacher@email.com"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="input-group input-group-right">
+        <input type="password" class="form-input" id="password" placeholder="Your password" style="padding-left:16px">
+        <span class="input-icon" id="togglePwd" style="cursor:pointer">👁️</span>
+      </div>
+    </div>
+    <div class="alert alert-danger hidden" id="errorMsg"></div>
+    <button class="btn btn-primary btn-lg w-full" id="loginBtn" onclick="handleLogin()">
+      <span class="btn-text">Teacher Login →</span>
+    </button>
+    <div style="text-align:center;font-size:0.85rem;color:var(--text-muted)">
+      New teacher? <a href="teacher-signup.html" style="color:var(--primary);font-weight:600">Create account</a>
+    </div>
+    <div class="divider" style="margin:4px 0"></div>
+    <a href="student-login.html" class="btn btn-ghost w-full" style="font-size:0.88rem">Switch to Student Login</a>
+  </div>
+</div>
+<script type="module">
+  import { loginUser } from '../js/auth.js';
+  window.handleLogin = async function() {
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('errorMsg');
+    err.classList.add('hidden');
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    if (!email || !password) { err.textContent = 'Please enter email and password.'; err.classList.remove('hidden'); return; }
+    btn.classList.add('btn-loading'); btn.disabled = true;
+    try {
+      await loginUser(email, password, 'teacher');
+      window.location.href = '../teacher/dashboard.html';
+    } catch(e) {
+      err.textContent = e.message;
+      err.classList.remove('hidden');
+      btn.classList.remove('btn-loading'); btn.disabled = false;
+    }
+  };
+  document.getElementById('togglePwd').addEventListener('click', () => { const p = document.getElementById('password'); p.type = p.type === 'password' ? 'text' : 'password'; });
+  document.addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+</script>
+</body>
+</html>

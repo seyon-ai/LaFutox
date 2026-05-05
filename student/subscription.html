@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription — LaTAFU Student</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:700px;margin:32px 0}
+    .current-plan{background:linear-gradient(135deg,var(--primary),var(--navy));border-radius:var(--radius-xl);padding:28px;color:white;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="search.html"><span class="link-icon">🔍</span> Find Teachers</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> My Chats</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link active" href="subscription.html"><span class="link-icon">⭐</span> Subscription</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">S</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarName">Student</div><div class="sidebar-user-role" id="planLabel">Free</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <h2 style="margin-bottom:6px">Subscription</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px">Manage your LaTAFU plan</p>
+
+    <div class="current-plan" id="currentPlanBanner">
+      <div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);margin-bottom:4px">CURRENT PLAN</div>
+        <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:white" id="currentPlanName">Free</div>
+      </div>
+      <div id="currentPlanStatus"></div>
+    </div>
+
+    <div id="successAlert" class="alert alert-success hidden" style="margin-bottom:24px">✅ Your Pro subscription is now active! Welcome to LaTAFU Pro.</div>
+
+    <div class="plans-grid animate-fadeInUp">
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price"><sup>$</sup>0<span>/mo</span></div>
+        <div class="plan-desc">Start finding teachers</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Search local teachers</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> 10 free messages/teacher</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> AI student assistant</div>
+          <div class="plan-feature"><span class="plan-feature-x">✗</span> <span style="color:var(--gray-300)">LeUHaute™ scores</span></div>
+          <div class="plan-feature"><span class="plan-feature-x">✗</span> <span style="color:var(--gray-300)">Unlimited chat</span></div>
+        </div>
+        <button class="btn btn-ghost w-full" id="freeBtn" disabled>Current Plan</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-name">Student Pro</div>
+        <div class="plan-price"><sup>$</sup>9<span>/mo</span></div>
+        <div class="plan-desc">The full LaTAFU experience</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Everything in Free</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> <strong>LeUHaute™ scores</strong></div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Unlimited chat access</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Priority matching</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Advanced filters</div>
+        </div>
+        <button class="btn btn-primary w-full" id="proBtn" onclick="upgradePro()">Upgrade to Pro →</button>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:700px">
+      <h4 style="margin-bottom:16px">✦ What is LeUHaute™?</h4>
+      <p style="font-size:0.9rem">LeUHaute is LaTAFU's exclusive AI teacher intelligence system. Our AI conducts a real interview with every teacher and scores them across 5 dimensions: Teaching Clarity, Subject Mastery, Student Patience, Problem Solving, and Communication. Pro students can see these scores and make smarter hiring decisions.</p>
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireStudentAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  requireStudentAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name')||'Student';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+
+  const params = new URLSearchParams(location.search);
+  if (params.get('success') === 'true') document.getElementById('successAlert').classList.remove('hidden');
+
+  async function load() {
+    const p = await getProfile(uid, 'student');
+    const isPro = p?.subscription === 'pro';
+    document.getElementById('currentPlanName').textContent = isPro ? 'Student Pro ⭐' : 'Free';
+    document.getElementById('planLabel').textContent = isPro ? '⭐ Pro Plan' : 'Free Plan';
+    if (isPro) {
+      document.getElementById('proBtn').textContent = '✅ Active';
+      document.getElementById('proBtn').disabled = true;
+      document.getElementById('freeBtn').textContent = 'Downgrade';
+      document.getElementById('currentPlanStatus').innerHTML = `<span class="badge badge-success" style="font-size:0.85rem">✅ Active</span>`;
+    } else {
+      document.getElementById('currentPlanStatus').innerHTML = `<a href="#" onclick="upgradePro()" style="color:white;font-size:0.88rem;font-weight:600;text-decoration:underline">Upgrade to Pro →</a>`;
+    }
+  }
+
+  window.upgradePro = async function() {
+    const btn = document.getElementById('proBtn');
+    btn.classList.add('btn-loading'); btn.disabled = true;
+    const res = await fetch('/api/stripe-checkout', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: 'student_pro', studentUid: uid })
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else { btn.classList.remove('btn-loading'); btn.disabled = false; }
+  };
+
+  load();
+</script>
+</body>
+</html>

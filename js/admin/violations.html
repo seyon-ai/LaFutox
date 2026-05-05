@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Violations — LaTAFU Admin</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .severity-high{border-left-color:var(--danger)!important}
+    .severity-medium{border-left-color:var(--warning)!important}
+    .severity-low{border-left-color:var(--gray-300)!important}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Admin Panel</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="users.html"><span class="link-icon">👥</span> Users</a>
+        <a class="sidebar-link active" href="violations.html"><span class="link-icon">🚨</span> Violations</a>
+        <a class="sidebar-link" href="leuhaufe-scores.html"><span class="link-icon">✦</span> LeUHaute Scores</a>
+        <a class="sidebar-link" href="payments.html"><span class="link-icon">💰</span> Payments</a>
+        <a class="sidebar-link" href="settings.html"><span class="link-icon">⚙️</span> Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" style="background:rgba(255,71,87,0.1);color:var(--danger)">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:var(--danger)">Administrator</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div><h2>AI Violations Log</h2><p style="color:var(--text-muted)">Messages flagged by the AI monitor</p></div>
+      <div style="display:flex;gap:10px">
+        <select class="form-select" id="severityFilter" onchange="filterViolations()" style="width:auto">
+          <option value="">All Severities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select class="form-select" id="roleFilter" onchange="filterViolations()" style="width:auto">
+          <option value="">All Roles</option>
+          <option value="student">Students</option>
+          <option value="teacher">Teachers</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(255,71,87,0.1)">🚨</div><div class="stat-card-value" id="totalCount">—</div><div class="stat-card-label">Total Violations</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(255,165,2,0.1)">⚠️</div><div class="stat-card-value" id="highCount">—</div><div class="stat-card-label">High Severity</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">🛡️</div><div class="stat-card-value" id="blockedCount">—</div><div class="stat-card-label">Messages Blocked</div></div>
+    </div>
+
+    <div id="violationsList">
+      ${Array(3).fill(`<div style="background:white;border-radius:var(--radius-lg);padding:16px;margin-bottom:8px;border-left:4px solid var(--gray-200)"><div class="skeleton skeleton-text w-75"></div><div class="skeleton skeleton-text w-90" style="margin-top:8px"></div></div>`).join('')}
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireAdminAuth, logout } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireAdminAuth();
+  window.doLogout = async () => { await logout(); };
+
+  let allViolations = [];
+
+  async function load() {
+    try {
+      const snap = await getDocs(query(collection(db,'violations'), orderBy('timestamp','desc')));
+      allViolations = snap.docs.map(d=>({id:d.id,...d.data()}));
+      document.getElementById('totalCount').textContent = allViolations.length;
+      document.getElementById('highCount').textContent = allViolations.filter(v=>v.severity==='high').length;
+      document.getElementById('blockedCount').textContent = allViolations.filter(v=>v.blocked).length;
+      render();
+    } catch(e) { render(); }
+  }
+
+  window.filterViolations = render;
+
+  function render() {
+    const sev = document.getElementById('severityFilter').value;
+    const role = document.getElementById('roleFilter').value;
+    let filtered = allViolations;
+    if (sev) filtered = filtered.filter(v=>v.severity===sev);
+    if (role) filtered = filtered.filter(v=>v.role===role);
+
+    const el = document.getElementById('violationsList');
+    if (!filtered.length) { el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🛡️</div><h3>No violations found</h3><p>The AI monitor is keeping things clean</p></div>`; return; }
+
+    el.innerHTML = filtered.map(v=>`
+      <div class="violation-item severity-${v.severity||'low'} animate-fadeInUp">
+        <div class="violation-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="badge ${v.severity==='high'?'badge-danger':v.severity==='medium'?badge-warning':'badge-navy'}">${v.severity||'low'}</span>
+            <span class="violation-users">${v.senderName||'Unknown'} (${v.role||'?'})</span>
+          </div>
+          <span class="violation-time">${v.timestamp?new Date(v.timestamp).toLocaleString():''}</span>
+        </div>
+        <div class="violation-msg">"${v.message||''}"</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <div class="violation-reason">⚠️ ${v.reason||'AI flagged contact info attempt'}</div>
+          <div style="display:flex;gap:6px">
+            <span class="badge ${v.blocked?'badge-danger':'badge-success'}">${v.blocked?'Blocked':'Warned'}</span>
+            <span style="font-size:0.75rem;color:var(--text-muted)">Chat: ${v.chatId||'—'}</span>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  load();
+</script>
+</body>
+</html>

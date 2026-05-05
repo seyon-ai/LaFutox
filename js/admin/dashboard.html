@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .admin-hero{background:linear-gradient(135deg,var(--navy),#1a3a7a);border-radius:var(--radius-xl);padding:32px 40px;color:white;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .admin-hero h2{color:white;margin-bottom:4px}
+    .admin-hero p{color:rgba(255,255,255,0.65);margin:0}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+    .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}@media(max-width:1100px){.content-grid{grid-template-columns:1fr}}
+    .activity-list{display:flex;flex-direction:column;gap:8px}
+    .activity-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--gray-50);border-radius:var(--radius);font-size:0.85rem}
+    .activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Admin Panel</div>
+        <a class="sidebar-link active" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="users.html"><span class="link-icon">👥</span> Users</a>
+        <a class="sidebar-link" href="violations.html"><span class="link-icon">🚨</span> Violations <span class="link-badge" id="violBadge" style="display:none">!</span></a>
+        <a class="sidebar-link" href="leuhaufe-scores.html"><span class="link-icon">✦</span> LeUHaute Scores</a>
+        <a class="sidebar-link" href="payments.html"><span class="link-icon">💰</span> Payments</a>
+        <a class="sidebar-link" href="settings.html"><span class="link-icon">⚙️</span> Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" style="background:rgba(255,71,87,0.1);color:var(--danger)">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:var(--danger)">Administrator</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="admin-hero animate-fadeInDown">
+      <div>
+        <h2>Admin Dashboard</h2>
+        <p>Platform overview — LaTAFU</p>
+      </div>
+      <div style="font-size:0.82rem;color:rgba(255,255,255,0.5)" id="lastUpdated">Loading...</div>
+    </div>
+
+    <div class="stats-grid animate-fadeInUp">
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(26,115,232,0.1)">👨‍🎓</div><div class="stat-card-value" id="totalStudents">—</div><div class="stat-card-label">Total Students</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">👩‍🏫</div><div class="stat-card-value" id="totalTeachers">—</div><div class="stat-card-label">Total Teachers</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(245,166,35,0.1)">💬</div><div class="stat-card-value" id="totalChats">—</div><div class="stat-card-label">Total Chats</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(255,71,87,0.1)">🚨</div><div class="stat-card-value" id="totalViolations">—</div><div class="stat-card-label">AI Violations</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">💰</div><div class="stat-card-value" id="totalRevenue">—</div><div class="stat-card-label">Total Revenue</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(13,27,75,0.08)">⭐</div><div class="stat-card-value" id="proStudents">—</div><div class="stat-card-label">Pro Subscribers</div></div>
+    </div>
+
+    <div class="content-grid">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3>Recent Violations</h3>
+          <a href="violations.html" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div id="recentViolations">
+          <div class="empty-state"><div class="empty-state-icon">🛡️</div><h3>No violations</h3><p>The AI monitor is clean</p></div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3>Recent Signups</h3>
+          <a href="users.html" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="activity-list" id="recentSignups">
+          ${Array(4).fill(`<div class="activity-item"><div class="skeleton skeleton-circle" style="width:32px;height:32px"></div><div style="flex:1"><div class="skeleton skeleton-text w-75"></div></div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireAdminAuth, logout } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireAdminAuth();
+  window.doLogout = async () => { await logout(); };
+
+  async function load() {
+    document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    try {
+      const [studSnap, teachSnap, chatsSnap, paymentsSnap, violationsSnap] = await Promise.all([
+        getDocs(collection(db,'students')),
+        getDocs(collection(db,'teachers')),
+        getDocs(collection(db,'chats')),
+        getDocs(collection(db,'payments')),
+        getDocs(collection(db,'violations'))
+      ]);
+      document.getElementById('totalStudents').textContent = studSnap.size;
+      document.getElementById('totalTeachers').textContent = teachSnap.size;
+      document.getElementById('totalChats').textContent = chatsSnap.size;
+      document.getElementById('totalViolations').textContent = violationsSnap.size;
+      if (violationsSnap.size > 0) { document.getElementById('violBadge').style.display='inline'; }
+      const revenue = paymentsSnap.docs.reduce((s,d)=>s+(d.data().amount||0),0);
+      document.getElementById('totalRevenue').textContent = '$'+(revenue/100).toFixed(0);
+      const proStudents = studSnap.docs.filter(d=>d.data().subscription==='pro').length;
+      document.getElementById('proStudents').textContent = proStudents;
+
+      // Recent signups
+      const recentStudents = studSnap.docs.map(d=>({...d.data(),type:'student'}));
+      const recentTeachers = teachSnap.docs.map(d=>({...d.data(),type:'teacher'}));
+      const all = [...recentStudents,...recentTeachers].sort((a,b)=>{ const da=a.createdAt?.toDate?.()??new Date(0); const db2=b.createdAt?.toDate?.()??new Date(0); return db2-da; }).slice(0,6);
+      document.getElementById('recentSignups').innerHTML = all.map(u=>`
+        <div class="activity-item">
+          <div class="activity-icon" style="background:${u.type==='teacher'?'rgba(0,196,140,0.1)':'rgba(26,115,232,0.1)'}">${u.type==='teacher'?'👩‍🏫':'👨‍🎓'}</div>
+          <div style="flex:1"><span style="font-weight:600">${u.name||'User'}</span> <span style="color:var(--text-muted)">signed up as ${u.type}</span></div>
+          <span style="font-size:0.72rem;color:var(--text-muted)">${u.city||''}</span>
+        </div>`).join('') || '<div class="empty-state"><p>No signups yet</p></div>';
+
+      // Recent violations
+      if (violationsSnap.size > 0) {
+        const viols = violationsSnap.docs.slice(0,3).map(d=>({id:d.id,...d.data()}));
+        document.getElementById('recentViolations').innerHTML = viols.map(v=>`
+          <div class="violation-item">
+            <div class="violation-header">
+              <span class="violation-users">${v.senderName||'?'} → ${v.chatId||''}</span>
+              <span class="violation-time">${v.timestamp ? new Date(v.timestamp).toLocaleString() : ''}</span>
+            </div>
+            <div class="violation-msg">${v.message||''}</div>
+            <div class="violation-reason">⚠️ ${v.reason||'AI flagged'}</div>
+          </div>`).join('');
+      }
+    } catch(e){ console.error(e); }
+  }
+  load();
+</script>
+</body>
+</html>

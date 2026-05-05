@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — LaTAFU Admin</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .settings-section{background:white;border-radius:var(--radius-xl);padding:32px;border:1px solid var(--gray-100);margin-bottom:20px}
+    .settings-section h4{font-size:1rem;color:var(--navy);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--gray-100)}
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-50)}
+    .setting-row:last-child{border-bottom:none}
+    .setting-info h5{font-size:0.9rem;font-weight:600;color:var(--navy);margin-bottom:2px}
+    .setting-info p{font-size:0.8rem;color:var(--text-muted);margin:0}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Admin Panel</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="users.html"><span class="link-icon">👥</span> Users</a>
+        <a class="sidebar-link" href="violations.html"><span class="link-icon">🚨</span> Violations</a>
+        <a class="sidebar-link" href="leuhaufe-scores.html"><span class="link-icon">✦</span> LeUHaute Scores</a>
+        <a class="sidebar-link" href="payments.html"><span class="link-icon">💰</span> Payments</a>
+        <a class="sidebar-link active" href="settings.html"><span class="link-icon">⚙️</span> Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" style="background:rgba(255,71,87,0.1);color:var(--danger)">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:var(--danger)">Administrator</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <h2 style="margin-bottom:6px">Platform Settings</h2>
+    <p style="color:var(--text-muted);margin-bottom:28px">Configure LaTAFU platform behavior</p>
+
+    <div class="settings-section animate-fadeInUp">
+      <h4>🤖 AI Monitor Settings</h4>
+      <div class="setting-row">
+        <div class="setting-info"><h5>AI Chat Monitor</h5><p>Block contact info in unverified chats using AI</p></div>
+        <label class="toggle"><input type="checkbox" id="aiMonitor" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Real-time Type Analysis</h5><p>Analyze messages as user types (before sending)</p></div>
+        <label class="toggle"><input type="checkbox" id="realTimeAnalysis" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Log All Violations</h5><p>Save flagged messages to violations database</p></div>
+        <label class="toggle"><input type="checkbox" id="logViolations" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Auto-suspend Repeat Offenders</h5><p>Suspend users with 3+ violations automatically</p></div>
+        <label class="toggle"><input type="checkbox" id="autoSuspend"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="settings-section animate-fadeInUp">
+      <h4>💬 Chat & Payment Settings</h4>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Free Message Limit</h5><p>Number of free messages before payment gate</p></div>
+        <input type="number" class="form-input" value="10" style="width:80px;text-align:center">
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Chat Unlock Price</h5><p>Amount students pay to unlock full conversation</p></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:0.9rem;color:var(--text-muted)">$</span><input type="number" class="form-input" value="1.99" step="0.01" style="width:80px"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>New Teacher Verification Required</h5><p>Require admin approval before teacher goes live</p></div>
+        <label class="toggle"><input type="checkbox" id="requireVerification"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="settings-section animate-fadeInUp">
+      <h4>✦ LeUHaute™ Settings</h4>
+      <div class="setting-row">
+        <div class="setting-info"><h5>LeUHaute Interview Active</h5><p>Allow teachers to complete LeUHaute interview</p></div>
+        <label class="toggle"><input type="checkbox" id="lhActive" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Score Refresh Period (days)</h5><p>How often LeUHaute scores are recalculated</p></div>
+        <input type="number" class="form-input" value="90" style="width:80px;text-align:center">
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Pro-only Score Visibility</h5><p>Hide scores from non-Pro students</p></div>
+        <label class="toggle"><input type="checkbox" id="proOnly" checked><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="settings-section animate-fadeInUp">
+      <h4>💰 Subscription Pricing</h4>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Student Pro Monthly Price</h5></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:0.9rem;color:var(--text-muted)">$</span><input type="number" class="form-input" value="9" style="width:80px"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h5>Teacher Plus Monthly Price</h5></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:0.9rem;color:var(--text-muted)">$</span><input type="number" class="form-input" value="14" style="width:80px"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-lg" onclick="saveSettings()">Save All Settings</button>
+    <div id="saveAlert" class="alert alert-success hidden" style="margin-top:16px">✅ Settings saved!</div>
+  </main>
+</div>
+<script type="module">
+  import { requireAdminAuth, logout } from '../js/auth.js';
+  requireAdminAuth();
+  window.doLogout = async () => { await logout(); };
+  window.saveSettings = function() {
+    document.getElementById('saveAlert').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('saveAlert').classList.add('hidden'),3000);
+  };
+</script>
+</body>
+</html>

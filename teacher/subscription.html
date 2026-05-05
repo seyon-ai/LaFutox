@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Plus — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;max-width:700px;margin:32px 0}
+    .current-banner{background:linear-gradient(135deg,var(--navy),#1a3a7a);border-radius:var(--radius-xl);padding:28px;color:white;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> Student Chats</a>
+        <a class="sidebar-link" href="earnings.html"><span class="link-icon">💰</span> Earnings</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Profile</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="leuhaufe.html"><span class="link-icon">✦</span> LeUHaute™</a>
+        <a class="sidebar-link active" href="subscription.html"><span class="link-icon">⭐</span> Teacher Plus</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">T</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarName">Teacher</div><div class="sidebar-user-role" id="planLabel">Free</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <h2 style="margin-bottom:6px">Teacher Plus</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px">Stand out and get more students</p>
+    <div id="successAlert" class="alert alert-success hidden" style="margin-bottom:20px">✅ Teacher Plus activated! You're now featured in search results.</div>
+    <div class="current-banner">
+      <div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:4px">CURRENT PLAN</div>
+        <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:white" id="currentPlanName">Free</div>
+      </div>
+      <div id="bannerAction"></div>
+    </div>
+    <div class="plans-grid animate-fadeInUp">
+      <div class="plan-card">
+        <div class="plan-name">Free Teacher</div>
+        <div class="plan-price"><sup>$</sup>0<span>/mo</span></div>
+        <div class="plan-desc">Basic listing</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Public profile</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Receive student chats</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> LeUHaute™ interview</div>
+          <div class="plan-feature"><span class="plan-feature-x">✗</span><span style="color:var(--gray-300)"> Featured in search</span></div>
+          <div class="plan-feature"><span class="plan-feature-x">✗</span><span style="color:var(--gray-300)"> Analytics dashboard</span></div>
+        </div>
+        <button class="btn btn-ghost w-full" id="freeBtn" disabled>Current Plan</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-name">Teacher Plus ⭐</div>
+        <div class="plan-price"><sup>$</sup>14<span>/mo</span></div>
+        <div class="plan-desc">Get more students</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Everything in Free</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> <strong>Featured in search</strong></div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> LeUHaute™ badge shown</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Earnings analytics</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Priority support</div>
+        </div>
+        <button class="btn btn-primary w-full" id="plusBtn" onclick="upgradePlus()">Get Teacher Plus →</button>
+      </div>
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireTeacherAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  requireTeacherAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name')||'Teacher';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+  const params = new URLSearchParams(location.search);
+  if (params.get('success')==='true') document.getElementById('successAlert').classList.remove('hidden');
+  async function load() {
+    const p = await getProfile(uid,'teacher');
+    const isPlus = p?.subscription==='plus';
+    document.getElementById('currentPlanName').textContent = isPlus?'Teacher Plus ⭐':'Free Teacher';
+    document.getElementById('planLabel').textContent = isPlus?'⭐ Teacher Plus':'Free';
+    if (isPlus) {
+      document.getElementById('plusBtn').textContent='✅ Active'; document.getElementById('plusBtn').disabled=true;
+      document.getElementById('freeBtn').textContent='Downgrade';
+      document.getElementById('bannerAction').innerHTML=`<span class="badge badge-success" style="font-size:0.9rem">✅ Active</span>`;
+    } else {
+      document.getElementById('bannerAction').innerHTML=`<a href="#" onclick="upgradePlus()" style="color:white;font-weight:600;font-size:0.9rem;text-decoration:underline">Upgrade →</a>`;
+    }
+  }
+  window.upgradePlus = async function() {
+    const btn=document.getElementById('plusBtn');
+    btn.classList.add('btn-loading'); btn.disabled=true;
+    const res=await fetch('/api/stripe-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'teacher_plus',teacherUid:uid})});
+    const data=await res.json();
+    if(data.url) window.location.href=data.url;
+    else{btn.classList.remove('btn-loading');btn.disabled=false;}
+  };
+  load();
+</script>
+</body>
+</html>

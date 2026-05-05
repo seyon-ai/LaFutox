@@ -1,0 +1,186 @@
+/* =====================
+   ANIMATIONS & TRANSITIONS
+   ===================== */
+
+/* Fade */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Scale */
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes scaleInBounce { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+/* Slide */
+@keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
+
+/* Spin */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spinReverse { to { transform: rotate(-360deg); } }
+
+/* Shimmer */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* Float */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Ripple */
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Typing indicator */
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* Bounce */
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Glow */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(26,115,232,0.3); }
+  50% { box-shadow: 0 0 24px rgba(26,115,232,0.6); }
+}
+@keyframes goldGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(245,166,35,0.3); }
+  50% { box-shadow: 0 0 24px rgba(245,166,35,0.7); }
+}
+
+/* =====================
+   UTILITY ANIMATION CLASSES
+   ===================== */
+.animate-fadeIn { animation: fadeIn 0.5s ease forwards; }
+.animate-fadeInUp { animation: fadeInUp 0.5s ease forwards; }
+.animate-fadeInDown { animation: fadeInDown 0.5s ease forwards; }
+.animate-scaleIn { animation: scaleIn 0.4s ease forwards; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse { animation: pulse 2s ease infinite; }
+.animate-glow { animation: glow 2s ease infinite; }
+.animate-goldGlow { animation: goldGlow 2s ease infinite; }
+.animate-shake { animation: shake 0.4s ease; }
+.animate-bounceIn { animation: bounceIn 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
+.stagger > *:nth-child(6) { animation-delay: 400ms; }
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+.skeleton-text { height: 14px; border-radius: 4px; margin-bottom: 8px; }
+.skeleton-text.w-75 { width: 75%; }
+.skeleton-text.w-50 { width: 50%; }
+.skeleton-text.w-90 { width: 90%; }
+.skeleton-circle { border-radius: 50%; }
+.skeleton-card { border-radius: var(--radius-lg); }
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px 16px; background: var(--gray-100);
+  border-radius: 18px; border-bottom-left-radius: 4px;
+  width: fit-content;
+}
+.typing-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gray-300); animation: typingDot 1.2s ease infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Page transitions */
+.page-enter { animation: fadeInUp 0.4s ease forwards; }
+
+/* Hover lift */
+.hover-lift { transition: transform 0.22s ease, box-shadow 0.22s ease; }
+.hover-lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+/* Ripple effect */
+.ripple-container { position: relative; overflow: hidden; }
+.ripple-effect {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+/* Score bar animation - triggered by JS */
+.leuhaufe-bar-fill { width: 0 !important; }
+.leuhaufe-bar-fill.animated { width: var(--target-width) !important; }
+
+/* Notification pulse */
+.notif-pulse {
+  position: relative;
+}
+.notif-pulse::after {
+  content: ''; position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1.5s ease infinite;
+}
+
+/* Loading dots */
+.loading-dots { display: flex; gap: 6px; align-items: center; }
+.loading-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary); animation: typingDot 1.2s ease infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Card hover shine */
+.card-shine {
+  position: relative; overflow: hidden;
+}
+.card-shine::before {
+  content: ''; position: absolute;
+  top: -100%; left: -100%;
+  width: 60%; height: 200%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+  transform: rotate(10deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.card-shine:hover::before { left: 150%; }
+
+/* Success checkmark */
+@keyframes checkmark {
+  0% { stroke-dashoffset: 50; }
+  100% { stroke-dashoffset: 0; }
+}
+.check-svg { stroke-dasharray: 50; stroke-dashoffset: 50; animation: checkmark 0.5s ease forwards 0.2s; }

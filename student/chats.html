@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Chats — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .chats-list{display:flex;flex-direction:column;gap:10px}
+    .chat-item{background:white;border:1px solid var(--gray-100);border-radius:var(--radius-lg);padding:18px 20px;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:14px}
+    .chat-item:hover{box-shadow:var(--shadow);border-color:var(--gray-200)}
+    .chat-item-info{flex:1;min-width:0}
+    .chat-item-name{font-weight:700;font-size:0.95rem;color:var(--navy);margin-bottom:3px}
+    .chat-item-preview{font-size:0.83rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+    .chat-item-time{font-size:0.72rem;color:var(--text-muted)}
+    .unread-badge{background:var(--primary);color:white;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:99px}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="search.html"><span class="link-icon">🔍</span> Find Teachers</a>
+        <a class="sidebar-link active" href="chats.html"><span class="link-icon">💬</span> My Chats</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Subscription</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">S</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Student</div>
+          <div class="sidebar-user-role">Student</div>
+        </div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div style="margin-bottom:24px"><h2>My Conversations</h2><p style="color:var(--text-muted)">All your chats with teachers</p></div>
+    <div class="chats-list" id="chatsList">
+      ${Array(3).fill(`<div class="chat-item"><div class="skeleton skeleton-circle" style="width:48px;height:48px"></div><div style="flex:1"><div class="skeleton skeleton-text w-75"></div><div class="skeleton skeleton-text w-50"></div></div></div>`).join('')}
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireStudentAuth, logout, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireStudentAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name')||'Student';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+  async function load() {
+    try {
+      const q = query(collection(db,'chats'), where('studentUid','==',uid), orderBy('updatedAt','desc'));
+      const snap = await getDocs(q);
+      const chats = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const el = document.getElementById('chatsList');
+      if (!chats.length) { el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">💬</div><h3>No conversations</h3><p>Find a teacher to start chatting</p><a href="search.html" class="btn btn-primary btn-sm" style="margin-top:12px">Find Teachers</a></div>`; return; }
+      el.innerHTML = chats.map(c => {
+        const t = c.updatedAt?.toDate ? c.updatedAt.toDate() : new Date();
+        const diff = Date.now()-t.getTime();
+        const timeStr = diff<86400000 ? t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : t.toLocaleDateString();
+        return `<div class="chat-item animate-fadeInUp" onclick="window.location.href='chat.html?chatId=${c.id}'">
+          <div class="avatar avatar-md" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(c.teacherName||'T').charAt(0)}</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">${c.teacherName||'Teacher'} ${!c.unlocked&&c.messageCount>=10?'<span class="badge badge-primary" style="font-size:0.65rem">🔒 Locked</span>':''} ${c.unlocked?'<span class="badge badge-success" style="font-size:0.65rem">✅ Unlocked</span>':''}</div>
+            <div class="chat-item-preview">${c.lastMessage||'No messages yet'}</div>
+          </div>
+          <div class="chat-item-right">
+            <div class="chat-item-time">${timeStr}</div>
+            ${c.unreadStudent>0?`<div class="unread-badge">${c.unreadStudent}</div>`:''}
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) { document.getElementById('chatsList').innerHTML=`<p>Error loading chats.</p>`; }
+  }
+  load();
+</script>
+</body>
+</html>

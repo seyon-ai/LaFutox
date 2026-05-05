@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .welcome-banner{background:linear-gradient(135deg,var(--navy),#1a3a7a);border-radius:var(--radius-xl);padding:36px 40px;color:white;margin-bottom:28px;position:relative;overflow:hidden}
+    .welcome-banner::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04)}
+    .welcome-banner h2{color:white;font-size:1.7rem;margin-bottom:6px}
+    .welcome-banner p{color:rgba(255,255,255,0.7);margin-bottom:20px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+    .content-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}@media(max-width:1100px){.content-grid{grid-template-columns:1fr}}
+    .leuhaufe-prompt{background:linear-gradient(135deg,var(--navy),#1a3a7a);border-radius:var(--radius-xl);padding:28px;color:white;margin-bottom:16px}
+    .leuhaufe-prompt h4{color:var(--gold);margin-bottom:8px;font-size:1rem}
+    .leuhaufe-prompt p{color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:16px}
+    .recent-chats{display:flex;flex-direction:column;gap:10px}
+    .chat-preview{background:white;border:1px solid var(--gray-100);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:var(--transition)}
+    .chat-preview:hover{box-shadow:var(--shadow);border-color:var(--gray-200)}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link active" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> Student Chats <span class="link-badge" id="unreadCount" style="display:none">0</span></a>
+        <a class="sidebar-link" href="earnings.html"><span class="link-icon">💰</span> Earnings</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Profile</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="leuhaufe.html"><span class="link-icon">✦</span> LeUHaute™</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Teacher Plus</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">T</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Teacher</div>
+          <div class="sidebar-user-role" id="sidebarPlan">Free</div>
+        </div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="welcome-banner animate-fadeInDown">
+      <h2>Welcome, <span id="welcomeName">Teacher</span> 👋</h2>
+      <p>Manage your students and grow your teaching profile.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="chats.html" class="btn" style="background:white;color:var(--primary)">💬 View Student Chats</a>
+        <a href="leuhaufe.html" class="btn" style="background:rgba(245,166,35,0.2);color:var(--gold);border:1px solid rgba(245,166,35,0.3)">✦ LeUHaute™ Interview</a>
+      </div>
+    </div>
+
+    <div class="stats-grid animate-fadeInUp">
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(26,115,232,0.1)">💬</div><div class="stat-card-value" id="totalChats">0</div><div class="stat-card-label">Total Conversations</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">💰</div><div class="stat-card-value" id="totalEarnings">₹0</div><div class="stat-card-label">Total Earnings</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(245,166,35,0.1)">✦</div><div class="stat-card-value" id="leuhaufeScore">—</div><div class="stat-card-label">LeUHaute™ Score</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(255,71,87,0.08)">⭐</div><div class="stat-card-value" id="avgRating">—</div><div class="stat-card-label">Average Rating</div></div>
+    </div>
+
+    <div class="content-grid">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3>Recent Student Chats</h3>
+          <a href="chats.html" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="recent-chats" id="recentChats">
+          ${Array(3).fill(`<div class="chat-preview"><div style="display:flex;gap:12px"><div class="skeleton skeleton-circle" style="width:44px;height:44px"></div><div style="flex:1"><div class="skeleton skeleton-text w-75"></div><div class="skeleton skeleton-text w-50"></div></div></div></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <!-- LeUHaute Prompt -->
+        <div class="leuhaufe-prompt" id="leuhaufePrompt">
+          <h4>✦ Complete LeUHaute™ Interview</h4>
+          <p>Get your AI score and appear higher in search results. Pro students see your score before contacting you.</p>
+          <a href="leuhaufe.html" class="btn btn-gold btn-sm">Start Interview →</a>
+        </div>
+        <!-- Quick Stats -->
+        <div class="card">
+          <h4 style="margin-bottom:16px;font-size:1rem">Quick Actions</h4>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <a href="profile.html" class="btn btn-outline w-full" style="justify-content:flex-start;gap:10px">✏️ Edit Profile</a>
+            <a href="earnings.html" class="btn btn-ghost w-full" style="justify-content:flex-start;gap:10px">💰 View Earnings</a>
+            <a href="subscription.html" class="btn btn-ghost w-full" style="justify-content:flex-start;gap:10px" id="plusBtn">⭐ Get Teacher Plus</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireTeacherAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireTeacherAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name')||'Teacher';
+  document.getElementById('welcomeName').textContent = name.split(' ')[0];
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+
+  async function load() {
+    const p = await getProfile(uid, 'teacher');
+    if (!p) return;
+    const isPlus = p.subscription === 'plus';
+    document.getElementById('sidebarPlan').textContent = isPlus ? '⭐ Teacher Plus' : 'Free';
+    if (isPlus) document.getElementById('plusBtn').style.display = 'none';
+    if (p.leuhaufeScore) {
+      document.getElementById('leuhaufeScore').textContent = p.leuhaufeScore;
+      document.getElementById('leuhaufePrompt').innerHTML = `<div class="leuhaufe-title">✦ LeUHaute™ Score</div><div class="leuhaufe-score" style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--gold)">${p.leuhaufeScore}<span style="font-size:1rem;color:rgba(255,255,255,0.5)">/100</span></div><div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:12px">${p.leuhaufeTier||''} Tier</div><a href="leuhaufe.html" class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:white">View Details</a>`;
+    }
+    if (p.rating) document.getElementById('avgRating').textContent = (p.rating||0).toFixed(1) + '★';
+
+    try {
+      const q = query(collection(db,'chats'), where('teacherUid','==',uid), orderBy('updatedAt','desc'), limit(5));
+      const snap = await getDocs(q);
+      const chats = snap.docs.map(d=>({id:d.id,...d.data()}));
+      document.getElementById('totalChats').textContent = chats.length;
+      const unread = chats.filter(c=>c.unreadTeacher>0).length;
+      if (unread>0) { document.getElementById('unreadCount').textContent=unread; document.getElementById('unreadCount').style.display='inline'; }
+      renderChats(chats);
+
+      const paymentsSnap = await getDocs(query(collection(db,'payments'), where('teacherUid','==',uid)));
+      const total = paymentsSnap.docs.reduce((sum,d)=>sum+(d.data().amount||0), 0);
+      document.getElementById('totalEarnings').textContent = '₹' + (total/100).toFixed(0);
+    } catch { renderChats([]); }
+  }
+
+  function renderChats(chats) {
+    const el = document.getElementById('recentChats');
+    if (!chats.length) { el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">💬</div><h3>No conversations yet</h3><p>Students will appear here once they message you</p></div>`; return; }
+    el.innerHTML = chats.map(c=>`
+      <div class="chat-preview" onclick="window.location.href='chat.html?chatId=${c.id}'">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="avatar avatar-sm" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(c.studentName||'S').charAt(0)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:0.9rem;color:var(--navy)">${c.studentName||'Student'} ${c.unreadTeacher>0?`<span class="badge badge-primary" style="font-size:0.65rem">${c.unreadTeacher} new</span>`:''}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.lastMessage||'No messages'}</div>
+          </div>
+          ${c.unlocked?'<span class="badge badge-success" style="font-size:0.65rem">💰 Paid</span>':''}
+        </div>
+      </div>`).join('');
+  }
+
+  load();
+</script>
+</body>
+</html>

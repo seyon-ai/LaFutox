@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Sign Up — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .auth-wrap { display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 1100px; background: white; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-lg); }
+    .auth-left { background: linear-gradient(135deg, #0D1B4B, #152366); padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; }
+    .auth-left-logo { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 40px; }
+    .auth-left-logo span { color: #4A9EFF; }
+    .auth-left h2 { color: white; font-size: 2rem; margin-bottom: 14px; }
+    .auth-left p { color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 32px; }
+    .perks { display: flex; flex-direction: column; gap: 14px; }
+    .perk { display: flex; gap: 12px; align-items: flex-start; }
+    .perk-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.95rem; }
+    .perk-text h4 { color: white; font-size: 0.88rem; font-weight: 600; }
+    .perk-text p { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0; }
+    .auth-right { padding: 48px; overflow-y: auto; max-height: 100vh; }
+    .auth-right h3 { font-size: 1.5rem; color: var(--navy); margin-bottom: 6px; }
+    .auth-right .sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 28px; }
+    .auth-form { display: flex; flex-direction: column; gap: 14px; }
+    .subjects-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .subj-chip { padding: 6px 14px; border: 1.5px solid var(--gray-200); border-radius: 99px; font-size: 0.8rem; font-weight: 500; color: var(--gray-700); cursor: pointer; transition: var(--transition); }
+    .subj-chip.selected { border-color: var(--primary); background: rgba(26,115,232,0.08); color: var(--primary); font-weight: 600; }
+    @media (max-width: 768px) { .auth-wrap { grid-template-columns: 1fr; } .auth-left { display: none; } .auth-right { padding: 32px 24px; } }
+  </style>
+</head>
+<body>
+<div class="auth-wrap animate-scaleIn">
+  <div class="auth-left">
+    <div class="auth-left-logo">La<span>TAFU</span></div>
+    <h2>Teach. Earn.<br>Get Rated by AI.</h2>
+    <p>Join LaTAFU as a teacher and get discovered by students looking for exactly your skills — in your area.</p>
+    <div class="perks">
+      <div class="perk"><div class="perk-icon">✦</div><div class="perk-text"><h4>LeUHaute™ AI Interview</h4><p>Get your AI score and stand out from the crowd</p></div></div>
+      <div class="perk"><div class="perk-icon">💰</div><div class="perk-text"><h4>Set Your Own Fees</h4><p>You control your pricing — no platform cuts on chats</p></div></div>
+      <div class="perk"><div class="perk-icon">🛡️</div><div class="perk-text"><h4>Safe Platform</h4><p>AI ensures students connect through proper channels</p></div></div>
+      <div class="perk"><div class="perk-icon">📍</div><div class="perk-text"><h4>Local Discovery</h4><p>Students in your city find you on a live map</p></div></div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <h3>Create Teacher Account</h3>
+    <p class="sub">Already registered? <a href="teacher-login.html" style="color:var(--primary);font-weight:600">Log in</a></p>
+    <form class="auth-form" onsubmit="return false">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" class="form-input" id="firstName" placeholder="Priya" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" class="form-input" id="lastName" placeholder="Sharma" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email <span style="color:var(--danger)">*</span></label>
+        <div class="input-group"><span class="input-icon">✉️</span><input type="email" class="form-input" id="email" placeholder="teacher@email.com" required></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
+        <div class="input-group input-group-right">
+          <input type="password" class="form-input" id="password" placeholder="Min. 8 characters" required style="padding-left:16px">
+          <span class="input-icon" id="togglePwd" style="cursor:pointer">👁️</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">City / Location <span style="color:var(--danger)">*</span></label>
+        <div class="input-group"><span class="input-icon">📍</span><input type="text" class="form-input" id="city" placeholder="Mumbai, Delhi, Bangalore..." required></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subjects You Teach <span style="color:var(--danger)">*</span></label>
+        <div class="subjects-grid" id="subjectsGrid">
+          <span class="subj-chip" onclick="toggleSubject(this,'Mathematics')">Mathematics</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Physics')">Physics</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Chemistry')">Chemistry</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Biology')">Biology</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'English')">English</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Hindi')">Hindi</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Computer Science')">Computer Science</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'History')">History</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Geography')">Geography</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Economics')">Economics</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Music')">Music</span>
+          <span class="subj-chip" onclick="toggleSubject(this,'Art')">Art</span>
+        </div>
+        <div class="form-hint" style="margin-top:8px">Select all that apply</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Session Fee (per hour) <span style="color:var(--danger)">*</span></label>
+          <div class="input-group"><span class="input-icon">💰</span><input type="number" class="form-input" id="fee" placeholder="500" min="50" required></div>
+          <div class="form-hint">In your local currency</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Years of Experience</label>
+          <select class="form-select" id="experience">
+            <option value="">Select</option>
+            <option>Less than 1 year</option>
+            <option>1–3 years</option>
+            <option>3–5 years</option>
+            <option>5–10 years</option>
+            <option>10+ years</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Short Bio</label>
+        <textarea class="form-textarea" id="bio" placeholder="Tell students about yourself, your teaching style, and what makes you great..." rows="3"></textarea>
+      </div>
+      <label class="checkbox-wrap">
+        <input type="checkbox" id="agreeTerms" required>
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-text">I agree to LaTAFU's <a href="#" style="color:var(--primary)">Terms</a> and <a href="#" style="color:var(--primary)">Privacy Policy</a></span>
+      </label>
+      <div class="alert alert-danger hidden" id="errorMsg"></div>
+      <button class="btn btn-primary btn-lg w-full" id="signupBtn" onclick="handleSignup()">
+        <span class="btn-text">Create Teacher Account →</span>
+      </button>
+    </form>
+    <div style="margin-top:16px;text-align:center;font-size:0.88rem;color:var(--text-muted)">
+      Looking to learn? <a href="student-signup.html" style="color:var(--primary);font-weight:600">Sign up as Student</a>
+    </div>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script type="module">
+  import { signupTeacher } from '../js/auth.js';
+
+  let selectedSubjects = [];
+  window.toggleSubject = function(el, subject) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) selectedSubjects.push(subject);
+    else selectedSubjects = selectedSubjects.filter(s => s !== subject);
+  };
+
+  window.handleSignup = async function() {
+    const btn = document.getElementById('signupBtn');
+    const err = document.getElementById('errorMsg');
+    err.classList.add('hidden');
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const city = document.getElementById('city').value.trim();
+    const fee = document.getElementById('fee').value;
+    const experience = document.getElementById('experience').value;
+    const bio = document.getElementById('bio').value.trim();
+    const agreed = document.getElementById('agreeTerms').checked;
+
+    if (!firstName || !lastName || !email || !password || !city || !fee) {
+      err.textContent = 'Please fill in all required fields.';
+      err.classList.remove('hidden'); return;
+    }
+    if (selectedSubjects.length === 0) {
+      err.textContent = 'Please select at least one subject.';
+      err.classList.remove('hidden'); return;
+    }
+    if (!agreed) {
+      err.textContent = 'Please agree to the Terms.';
+      err.classList.remove('hidden'); return;
+    }
+
+    btn.classList.add('btn-loading'); btn.disabled = true;
+
+    try {
+      let lat = 0, lng = 0;
+      try {
+        const geo = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=YOUR_GOOGLE_MAPS_KEY`);
+        const gd = await geo.json();
+        if (gd.results?.[0]) { lat = gd.results[0].geometry.location.lat; lng = gd.results[0].geometry.location.lng; }
+      } catch {}
+
+      await signupTeacher({ name: `${firstName} ${lastName}`, email, password, city, lat, lng, subjects: selectedSubjects, fee: parseInt(fee), experience, bio });
+
+      await fetch('/api/send-email', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ type: 'welcome_teacher', to: email, name: firstName })
+      });
+
+      window.location.href = '../teacher/dashboard.html';
+    } catch(e) {
+      err.textContent = e.message || 'Signup failed.';
+      err.classList.remove('hidden');
+      btn.classList.remove('btn-loading'); btn.disabled = false;
+    }
+  };
+
+  document.getElementById('togglePwd').addEventListener('click', () => {
+    const p = document.getElementById('password');
+    p.type = p.type === 'password' ? 'text' : 'password';
+  });
+</script>
+</body>
+</html>

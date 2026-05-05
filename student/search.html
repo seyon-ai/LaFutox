@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Teachers — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); }
+    .layout { display: flex; min-height: 100vh; }
+    .main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    @media(max-width:900px) { .main { margin-left: 0; } }
+    .search-header { background: white; border-bottom: 1px solid var(--gray-100); padding: 16px 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .search-main { display: flex; flex: 1; overflow: hidden; }
+    .results-panel { width: 400px; flex-shrink: 0; overflow-y: auto; padding: 16px; background: var(--gray-50); border-right: 1px solid var(--gray-100); }
+    .map-panel { flex: 1; position: relative; background: var(--gray-100); }
+    #map { width: 100%; height: 100%; }
+    @media(max-width:900px) { .search-main { flex-direction: column; } .results-panel { width: 100%; max-height: 50vh; } .map-panel { min-height: 300px; } }
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 24px; background: white; border-bottom: 1px solid var(--gray-100); }
+    .filter-chip { padding: 6px 14px; border: 1.5px solid var(--gray-200); border-radius: 99px; font-size: 0.8rem; font-weight: 500; color: var(--gray-700); cursor: pointer; transition: var(--transition); background: white; }
+    .filter-chip.active { border-color: var(--primary); background: rgba(26,115,232,0.08); color: var(--primary); font-weight: 600; }
+    .results-count { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-bottom: 12px; }
+    .teacher-list { display: flex; flex-direction: column; gap: 10px; }
+    .t-card { background: white; border-radius: var(--radius-lg); padding: 16px; border: 1px solid var(--gray-100); cursor: pointer; transition: var(--transition); }
+    .t-card:hover, .t-card.highlighted { box-shadow: var(--shadow-md); border-color: var(--primary); transform: translateY(-1px); }
+    .t-card-top { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+    .t-card-info { flex: 1; min-width: 0; }
+    .t-card-name { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--navy); margin-bottom: 2px; }
+    .t-card-subject { font-size: 0.8rem; color: var(--primary); font-weight: 500; }
+    .t-card-loc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .t-card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+    .t-fee { font-family: var(--font-display); font-weight: 700; color: var(--navy); font-size: 1rem; }
+    .t-fee small { font-size: 0.72rem; font-weight: 400; color: var(--text-muted); }
+    .t-dist { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .map-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; gap: 12px; color: var(--text-muted); }
+    .search-bar { display: flex; gap: 8px; flex: 1; }
+    .search-bar input { flex: 1; padding: 10px 16px; border: 1.5px solid var(--gray-200); border-radius: var(--radius); font-size: 0.9rem; }
+    .search-bar input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link active" href="search.html"><span class="link-icon">🔍</span> Find Teachers</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> My Chats</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Subscription</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">S</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Student</div>
+          <div class="sidebar-user-role" id="sidebarPlan">Free Plan</div>
+        </div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- Search Header -->
+    <div class="search-header">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by subject, teacher name, or city..." oninput="filterTeachers()">
+        <button class="btn btn-primary" onclick="filterTeachers()">Search</button>
+      </div>
+    </div>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <span style="font-size:0.8rem;font-weight:600;color:var(--text-muted)">Filter:</span>
+      <button class="filter-chip active" data-filter="all" onclick="setFilter(this,'all')">All</button>
+      <button class="filter-chip" data-filter="nearby" onclick="setFilter(this,'nearby')">📍 Near Me</button>
+      <button class="filter-chip" data-filter="top" onclick="setFilter(this,'top')">⭐ Top Rated</button>
+      <button class="filter-chip" data-filter="verified" onclick="setFilter(this,'verified')">✅ Verified</button>
+      <button class="filter-chip" data-filter="leuhaufe" onclick="setFilter(this,'leuhaufe')">✦ LeUHaute™</button>
+      <select id="subjectFilter" class="filter-chip" style="cursor:pointer" onchange="filterTeachers()">
+        <option value="">All Subjects</option>
+        <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+        <option>Biology</option><option>English</option><option>Computer Science</option>
+        <option>History</option><option>Economics</option><option>Music</option>
+      </select>
+      <select id="feeFilter" class="filter-chip" style="cursor:pointer" onchange="filterTeachers()">
+        <option value="">Any Fee</option>
+        <option value="low">Under ₹500/hr</option>
+        <option value="mid">₹500–1000/hr</option>
+        <option value="high">₹1000+/hr</option>
+      </select>
+    </div>
+
+    <!-- Main Content -->
+    <div class="search-main">
+      <!-- Results Panel -->
+      <div class="results-panel">
+        <div class="results-count" id="resultsCount">Loading teachers...</div>
+        <div class="teacher-list" id="teacherList">
+          <!-- Skeletons -->
+          ${Array(4).fill(`<div class="t-card"><div style="display:flex;gap:12px"><div class="skeleton skeleton-circle" style="width:48px;height:48px"></div><div style="flex:1"><div class="skeleton skeleton-text w-75"></div><div class="skeleton skeleton-text w-50"></div></div></div></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Map Panel -->
+      <div class="map-panel">
+        <div id="map">
+          <div class="map-placeholder">
+            <div style="font-size:3rem">🗺️</div>
+            <p>Map loading... Add your Google Maps API key to enable</p>
+            <p style="font-size:0.8rem">Teachers will appear as pins on the map</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { requireStudentAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  requireStudentAuth();
+
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name') || 'Student';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+
+  let allTeachers = [];
+  let studentProfile = null;
+  let activeFilter = 'all';
+
+  window.doLogout = async () => { await logout(); };
+
+  async function init() {
+    studentProfile = await getProfile(uid, 'student');
+    if (studentProfile?.subscription === 'pro') {
+      document.getElementById('sidebarPlan').textContent = '⭐ Pro Plan';
+    }
+    await loadTeachers();
+  }
+
+  async function loadTeachers() {
+    try {
+      const snap = await getDocs(collection(db, 'teachers'));
+      allTeachers = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(t => t.active !== false);
+      filterTeachers();
+    } catch(e) {
+      document.getElementById('teacherList').innerHTML = `<div class="empty-state"><p>Failed to load teachers. Check your connection.</p></div>`;
+    }
+  }
+
+  window.setFilter = function(el, filter) {
+    document.querySelectorAll('.filter-chip[data-filter]').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    activeFilter = filter;
+    filterTeachers();
+  };
+
+  window.filterTeachers = function() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const subject = document.getElementById('subjectFilter').value;
+    const fee = document.getElementById('feeFilter').value;
+
+    let filtered = [...allTeachers];
+
+    if (search) {
+      filtered = filtered.filter(t =>
+        t.name?.toLowerCase().includes(search) ||
+        t.subjects?.some(s => s.toLowerCase().includes(search)) ||
+        t.city?.toLowerCase().includes(search)
+      );
+    }
+    if (subject) filtered = filtered.filter(t => t.subjects?.includes(subject));
+    if (fee === 'low') filtered = filtered.filter(t => t.fee < 500);
+    if (fee === 'mid') filtered = filtered.filter(t => t.fee >= 500 && t.fee <= 1000);
+    if (fee === 'high') filtered = filtered.filter(t => t.fee > 1000);
+    if (activeFilter === 'top') filtered = filtered.sort((a,b) => (b.rating||0)-(a.rating||0));
+    if (activeFilter === 'verified') filtered = filtered.filter(t => t.verified);
+    if (activeFilter === 'leuhaufe') filtered = filtered.filter(t => t.leuhaufeScore).sort((a,b) => (b.leuhaufeScore||0)-(a.leuhaufeScore||0));
+    if (activeFilter === 'nearby' && studentProfile?.location?.lat) {
+      filtered = filtered.filter(t => t.location?.lat && getDistance(studentProfile.location.lat, studentProfile.location.lng, t.location.lat, t.location.lng) <= 50)
+        .sort((a,b) => getDistance(studentProfile.location.lat, studentProfile.location.lng, a.location.lat, a.location.lng) - getDistance(studentProfile.location.lat, studentProfile.location.lng, b.location.lat, b.location.lng));
+    }
+
+    renderTeachers(filtered);
+  };
+
+  function renderTeachers(teachers) {
+    const isPro = studentProfile?.subscription === 'pro';
+    document.getElementById('resultsCount').textContent = `${teachers.length} teacher${teachers.length !== 1 ? 's' : ''} found`;
+
+    if (!teachers.length) {
+      document.getElementById('teacherList').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>No teachers found</h3><p>Try adjusting your filters</p></div>`;
+      return;
+    }
+
+    document.getElementById('teacherList').innerHTML = teachers.map(t => {
+      const dist = (studentProfile?.location?.lat && t.location?.lat)
+        ? getDistance(studentProfile.location.lat, studentProfile.location.lng, t.location.lat, t.location.lng).toFixed(1)
+        : null;
+      const stars = '★'.repeat(Math.round(t.rating||0)) + '☆'.repeat(5-Math.round(t.rating||0));
+
+      return `
+      <div class="t-card animate-fadeInUp" onclick="viewTeacher('${t.id}')">
+        <div class="t-card-top">
+          <div class="avatar avatar-md" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(t.name||'T').charAt(0)}</div>
+          <div class="t-card-info">
+            <div class="t-card-name">${t.name} ${t.verified ? '<span style="color:var(--success);font-size:0.75rem">✅</span>' : ''}</div>
+            <div class="t-card-subject">${(t.subjects||[]).slice(0,2).join(', ')}</div>
+            <div class="t-card-loc">📍 ${t.city||'Location not set'}</div>
+          </div>
+          ${t.leuhaufeScore ? (isPro ? `<div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--gold)">${t.leuhaufeScore}</div><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">LeUHaute</div></div>` : `<div title="Upgrade to Pro to see LeUHaute scores" style="text-align:center;opacity:0.4"><div style="font-size:1.1rem">✦</div><div style="font-size:0.65rem;color:var(--text-muted)">Pro</div></div>`) : ''}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+          ${(t.subjects||[]).map(s => `<span class="tag">${s}</span>`).join('')}
+        </div>
+        <div class="t-card-bottom">
+          <div class="t-fee">₹${t.fee||0} <small>/hr</small></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            ${dist ? `<span class="t-dist">📍 ${dist}km</span>` : ''}
+            <span style="color:var(--gold);font-size:0.8rem">${stars}</span>
+            <span style="font-size:0.75rem;color:var(--text-muted)">(${t.reviewCount||0})</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.viewTeacher = function(id) {
+    window.location.href = `teacher-view.html?id=${id}`;
+  };
+
+  function getDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; const dLat = (lat2-lat1)*Math.PI/180; const dLng = (lng2-lng1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  init();
+</script>
+</body>
+</html>

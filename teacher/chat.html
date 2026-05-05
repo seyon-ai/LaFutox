@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat — LaTAFU Teacher</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50);overflow:hidden}
+    .chat-layout{display:flex;height:100vh}
+    .chat-main{flex:1;display:flex;flex-direction:column;height:100vh;background:white}
+    .chat-header{padding:16px 24px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:14px;background:white;flex-shrink:0;box-shadow:var(--shadow-sm)}
+    .chat-header-name{font-family:var(--font-display);font-weight:700;color:var(--navy);font-size:1rem}
+    .chat-header-status{font-size:0.78rem;color:var(--text-muted)}
+    .ai-monitor-bar{background:rgba(26,115,232,0.05);border-bottom:1px solid rgba(26,115,232,0.1);padding:7px 24px;display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--primary);font-weight:500;flex-shrink:0}
+    .messages-area{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px}
+    .msg-row{display:flex;align-items:flex-end;gap:8px}
+    .msg-row.sent{flex-direction:row-reverse}
+    .chat-input-area{padding:16px 24px;border-top:1px solid var(--gray-100);background:white;flex-shrink:0}
+    .input-row{display:flex;gap:10px;align-items:flex-end}
+    .msg-input{flex:1;padding:12px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);font-size:0.92rem;resize:none;min-height:44px;max-height:120px;line-height:1.5;transition:var(--transition)}
+    .msg-input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(26,115,232,0.08)}
+    .send-btn{width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;transition:var(--transition);flex-shrink:0;border:none}
+    .send-btn:hover{background:var(--primary-dark);transform:scale(1.05)}
+    .send-btn:disabled{background:var(--gray-200);cursor:not-allowed;transform:none}
+    .ai-warning{background:rgba(255,165,2,0.1);border:1px solid rgba(255,165,2,0.3);border-radius:var(--radius);padding:10px 14px;font-size:0.82rem;color:#a06000;margin-top:8px;display:none}
+    .ai-warning.show{display:flex;align-items:flex-start;gap:8px}
+    .paid-banner{background:rgba(0,196,140,0.08);border:1px solid rgba(0,196,140,0.2);border-radius:var(--radius);padding:10px 16px;font-size:0.82rem;color:#008060;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    @media(max-width:900px){.chat-layout .sidebar{display:none}}
+  </style>
+</head>
+<body>
+<div class="chat-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link active" href="chats.html"><span class="link-icon">💬</span> Student Chats</a>
+        <a class="sidebar-link" href="earnings.html"><span class="link-icon">💰</span> Earnings</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Profile</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="leuhaufe.html"><span class="link-icon">✦</span> LeUHaute™</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Teacher Plus</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">T</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarName">Teacher</div><div class="sidebar-user-role">Teacher</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="chat-main">
+    <div class="chat-header">
+      <a href="chats.html" class="btn btn-ghost btn-icon-sm" style="font-size:1.1rem">←</a>
+      <div class="avatar avatar-md" id="chatAvatar" style="background:rgba(26,115,232,0.1);color:var(--primary)">S</div>
+      <div style="flex:1">
+        <div class="chat-header-name" id="chatStudentName">Loading...</div>
+        <div class="chat-header-status" id="chatStudentInfo">Student</div>
+      </div>
+      <div id="paidIndicator" style="display:none" class="badge badge-success">💰 Paid</div>
+    </div>
+
+    <div class="ai-monitor-bar">
+      <span>🤖</span>
+      <span>AI Monitor Active — contact info sharing is restricted until payment</span>
+      <span style="margin-left:auto;opacity:0.6" id="monitorStatus">Monitoring</span>
+    </div>
+
+    <div class="messages-area" id="messagesArea">
+      <div style="text-align:center;font-size:0.78rem;color:var(--text-muted);padding:4px 0">Conversation started</div>
+    </div>
+
+    <div class="chat-input-area">
+      <div id="paidBanner" class="paid-banner hidden">
+        ✅ This conversation is unlocked — you can now share contact details if needed
+      </div>
+      <div class="input-row">
+        <textarea class="msg-input" id="msgInput" placeholder="Type your message..." rows="1" onkeydown="handleEnter(event)" oninput="checkAI(this.value)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="ai-warning show" id="aiWarning" style="display:none">
+        <span>⚠️</span><span id="aiWarningText">Message blocked</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireTeacherAuth, logout, getStoredUid } from '../js/auth.js';
+  import { db, rtdb } from '../js/firebase-config.js';
+  import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { monitorMessage } from '../js/ai/router.js';
+
+  requireTeacherAuth();
+  const uid = getStoredUid();
+  const tName = localStorage.getItem('latfu_name')||'Teacher';
+  document.getElementById('sidebarName').textContent = tName;
+  document.getElementById('sidebarAvatar').textContent = tName.charAt(0);
+  window.doLogout = async () => { await logout(); };
+
+  const params = new URLSearchParams(location.search);
+  const chatId = params.get('chatId');
+  if (!chatId) window.location.href = 'chats.html';
+
+  let chatData = null;
+  let isUnlocked = false;
+  let aiTimeout = null;
+  let lastBlocked = '';
+
+  async function load() {
+    const snap = await getDoc(doc(db, 'chats', chatId));
+    if (!snap.exists()) { window.location.href='chats.html'; return; }
+    chatData = snap.data();
+    isUnlocked = chatData.unlocked||false;
+
+    document.getElementById('chatStudentName').textContent = chatData.studentName||'Student';
+    document.getElementById('chatAvatar').textContent = (chatData.studentName||'S').charAt(0);
+
+    if (isUnlocked) {
+      document.getElementById('paidIndicator').style.display='flex';
+      document.getElementById('paidBanner').classList.remove('hidden');
+    }
+
+    // Mark teacher messages as read
+    await updateDoc(doc(db,'chats',chatId), { unreadTeacher: 0 });
+
+    // Listen to messages
+    const msgsRef = ref(rtdb, `chats/${chatId}/messages`);
+    onChildAdded(msgsRef, (snap) => { renderMessage(snap.val()); });
+  }
+
+  function renderMessage(msg) {
+    const area = document.getElementById('messagesArea');
+    const isSent = msg.senderUid === uid;
+    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    const div = document.createElement('div');
+    div.className = `msg-row ${isSent?'sent':''} animate-fadeInUp`;
+    div.innerHTML = `
+      ${!isSent?`<div class="avatar avatar-sm" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(chatData?.studentName||'S').charAt(0)}</div>`:''}
+      <div class="chat-bubble ${isSent?'sent':'received'}">
+        ${msg.text}
+        <div class="chat-time">${timeStr}</div>
+      </div>`;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  window.checkAI = function(text) {
+    clearTimeout(aiTimeout);
+    document.getElementById('aiWarning').style.display='none';
+    if (!text.trim() || isUnlocked) return;
+    aiTimeout = setTimeout(async () => {
+      const result = await monitorMessage(text, { role:'teacher', chatId });
+      if (!result.safe) {
+        document.getElementById('aiWarningText').textContent = result.suggestion||'This message may contain contact info. Wait for the student to unlock the conversation.';
+        document.getElementById('aiWarning').style.display='flex';
+        lastBlocked = text;
+      }
+    }, 700);
+  };
+
+  window.handleEnter = function(e) {
+    if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  window.sendMessage = async function() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Block if flagged and not unlocked
+    if (!isUnlocked && text === lastBlocked) {
+      document.getElementById('aiWarning').style.display='flex';
+      return;
+    }
+
+    // Final AI check (skip if chat is unlocked)
+    if (!isUnlocked) {
+      const monitor = await monitorMessage(text, { role:'teacher', chatId });
+      if (!monitor.safe) {
+        document.getElementById('aiWarningText').textContent = monitor.suggestion||'Contact info blocked — chat not yet unlocked.';
+        document.getElementById('aiWarning').style.display='flex';
+        return;
+      }
+    }
+
+    input.value='';
+    document.getElementById('aiWarning').style.display='none';
+
+    const msgsRef = ref(rtdb, `chats/${chatId}/messages`);
+    await push(msgsRef, {
+      text, senderUid: uid, senderName: tName,
+      role:'teacher', timestamp: Date.now()
+    });
+
+    await updateDoc(doc(db,'chats',chatId), {
+      lastMessage: text,
+      unreadStudent: (chatData.unreadStudent||0)+1,
+      updatedAt: serverTimestamp()
+    });
+  };
+
+  load();
+</script>
+</body>
+</html>

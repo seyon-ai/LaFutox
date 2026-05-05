@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments — LaTAFU Admin</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body{background:var(--gray-50)}.layout{display:flex;min-height:100vh}.main{flex:1;margin-left:260px;padding:32px}@media(max-width:900px){.main{margin-left:0;padding:20px}}
+    .revenue-hero{background:linear-gradient(135deg,var(--success),#00a878);border-radius:var(--radius-xl);padding:36px;color:white;margin-bottom:28px}
+    .revenue-hero h2{color:white;margin-bottom:4px}
+    .revenue-num{font-family:var(--font-display);font-size:3rem;font-weight:800}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Admin Panel</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="users.html"><span class="link-icon">👥</span> Users</a>
+        <a class="sidebar-link" href="violations.html"><span class="link-icon">🚨</span> Violations</a>
+        <a class="sidebar-link" href="leuhaufe-scores.html"><span class="link-icon">✦</span> LeUHaute Scores</a>
+        <a class="sidebar-link active" href="payments.html"><span class="link-icon">💰</span> Payments</a>
+        <a class="sidebar-link" href="settings.html"><span class="link-icon">⚙️</span> Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" style="background:rgba(255,71,87,0.1);color:var(--danger)">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:var(--danger)">Administrator</div></div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="revenue-hero animate-fadeInDown">
+      <h2>Platform Revenue</h2>
+      <div class="revenue-num" id="totalRevenue">$0</div>
+      <p style="color:rgba(255,255,255,0.7);margin-top:4px">All-time from chat unlocks + subscriptions</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px">
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.1)">🔓</div><div class="stat-card-value" id="chatUnlocks">0</div><div class="stat-card-label">Chat Unlocks</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(26,115,232,0.1)">⭐</div><div class="stat-card-value" id="proSubs">0</div><div class="stat-card-label">Pro Subscriptions</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(245,166,35,0.1)">🏫</div><div class="stat-card-value" id="teacherSubs">0</div><div class="stat-card-label">Teacher Plus</div></div>
+      <div class="stat-card"><div class="stat-card-icon" style="background:rgba(0,196,140,0.08)">📅</div><div class="stat-card-value" id="monthRevenue">$0</div><div class="stat-card-label">This Month</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h4>All Transactions</h4>
+        <input type="text" class="form-input" id="searchPay" placeholder="Search..." style="max-width:220px" oninput="filterPay()">
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="paymentsTable">
+          <thead><tr><th>Type</th><th>Student</th><th>Teacher</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="paymentsBody">
+            ${Array(5).fill(`<tr>${Array(6).fill('<td><div class="skeleton skeleton-text w-75"></div></td>').join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script type="module">
+  import { requireAdminAuth, logout } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  requireAdminAuth();
+  window.doLogout = async () => { await logout(); };
+  let allPayments = [];
+  async function load() {
+    const snap = await getDocs(query(collection(db,'payments'), orderBy('createdAt','desc')));
+    allPayments = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const total = allPayments.reduce((s,p)=>s+(p.amount||0),0);
+    const now=new Date(); const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+    const monthTotal = allPayments.filter(p=>{const d=p.createdAt?.toDate?.()??new Date(p.createdAt);return d>=monthStart;}).reduce((s,p)=>s+(p.amount||0),0);
+    document.getElementById('totalRevenue').textContent='$'+(total/100).toFixed(2);
+    document.getElementById('monthRevenue').textContent='$'+(monthTotal/100).toFixed(2);
+    document.getElementById('chatUnlocks').textContent=allPayments.filter(p=>p.type==='chat_unlock').length;
+    document.getElementById('proSubs').textContent=allPayments.filter(p=>p.type==='student_pro').length;
+    document.getElementById('teacherSubs').textContent=allPayments.filter(p=>p.type==='teacher_plus').length;
+    renderPayments();
+  }
+  window.filterPay = renderPayments;
+  function renderPayments() {
+    const s = document.getElementById('searchPay').value.toLowerCase();
+    const filtered = s ? allPayments.filter(p=>(p.studentName||'').toLowerCase().includes(s)||(p.teacherName||'').toLowerCase().includes(s)) : allPayments;
+    document.getElementById('paymentsBody').innerHTML = filtered.map(p=>`
+      <tr>
+        <td><span class="badge badge-primary" style="font-size:0.72rem">${p.type||'—'}</span></td>
+        <td style="font-size:0.88rem">${p.studentName||'—'}</td>
+        <td style="font-size:0.88rem">${p.teacherName||'—'}</td>
+        <td style="font-weight:600;color:var(--success)">$${((p.amount||0)/100).toFixed(2)}</td>
+        <td style="font-size:0.78rem;color:var(--text-muted)">${p.createdAt?.toDate?p.createdAt.toDate().toLocaleDateString():new Date(p.createdAt).toLocaleDateString()}</td>
+        <td><span class="badge badge-success">Paid</span></td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No payments yet</td></tr>';
+  }
+  load();
+</script>
+</body>
+</html>

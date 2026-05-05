@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Sign Up — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .auth-wrap { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; width: 100%; max-width: 1100px; gap: 0; background: white; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-lg); }
+    .auth-left { background: linear-gradient(135deg, #0D1B4B, #1a3a7a); padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; }
+    .auth-left-logo { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 48px; }
+    .auth-left-logo span { color: #4A9EFF; }
+    .auth-left h2 { color: white; font-size: 2rem; margin-bottom: 16px; }
+    .auth-left p { color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 36px; }
+    .auth-left-features { display: flex; flex-direction: column; gap: 16px; }
+    .auth-feature { display: flex; align-items: flex-start; gap: 14px; }
+    .auth-feature-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(26,115,232,0.2); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .auth-feature-text h4 { color: white; font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .auth-feature-text p { color: rgba(255,255,255,0.5); font-size: 0.82rem; margin: 0; }
+    .auth-right { padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; }
+    .auth-right h3 { font-size: 1.6rem; color: var(--navy); margin-bottom: 6px; }
+    .auth-right .sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px; }
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .auth-footer { margin-top: 24px; text-align: center; font-size: 0.88rem; color: var(--text-muted); }
+    .auth-footer a { color: var(--primary); font-weight: 600; }
+    @media (max-width: 768px) { .auth-wrap { grid-template-columns: 1fr; } .auth-left { display: none; } .auth-right { padding: 40px 28px; } }
+  </style>
+</head>
+<body>
+<div class="auth-wrap animate-scaleIn">
+  <!-- LEFT -->
+  <div class="auth-left">
+    <div class="auth-left-logo">La<span>TAFU</span></div>
+    <h2>Start Learning with AI</h2>
+    <p>Join thousands of students finding the perfect local teacher. Powered by AI — safer, smarter, better.</p>
+    <div class="auth-left-features">
+      <div class="auth-feature">
+        <div class="auth-feature-icon">📍</div>
+        <div class="auth-feature-text"><h4>Find Local Teachers</h4><p>Discover verified teachers near you instantly</p></div>
+      </div>
+      <div class="auth-feature">
+        <div class="auth-feature-icon">🤖</div>
+        <div class="auth-feature-text"><h4>AI-Powered Matching</h4><p>Smart recommendations based on your needs</p></div>
+      </div>
+      <div class="auth-feature">
+        <div class="auth-feature-icon">⭐</div>
+        <div class="auth-feature-text"><h4>LeUHaute™ Scores</h4><p>See AI-rated teacher intelligence scores (Pro)</p></div>
+      </div>
+    </div>
+  </div>
+  <!-- RIGHT -->
+  <div class="auth-right">
+    <h3>Create Student Account</h3>
+    <p class="sub">Already have an account? <a href="student-login.html">Log in</a></p>
+    <form class="auth-form" id="signupForm" onsubmit="return false">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name <span>*</span></label>
+          <div class="input-group"><span class="input-icon">👤</span><input type="text" class="form-input" id="firstName" placeholder="John" required></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span>*</span></label>
+          <input type="text" class="form-input" id="lastName" placeholder="Doe" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address <span>*</span></label>
+        <div class="input-group"><span class="input-icon">✉️</span><input type="email" class="form-input" id="email" placeholder="you@email.com" required></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password <span>*</span></label>
+        <div class="input-group input-group-right"><input type="password" class="form-input" id="password" placeholder="Min. 8 characters" required style="padding-left:16px"><span class="input-icon" id="togglePwd" style="cursor:pointer">👁️</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">City / Location <span>*</span></label>
+        <div class="input-group"><span class="input-icon">📍</span><input type="text" class="form-input" id="city" placeholder="e.g. Mumbai, Delhi, Chennai" required></div>
+        <div class="form-hint">Used to show teachers near you</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Grade / Level</label>
+        <select class="form-select" id="grade">
+          <option value="">Select your grade</option>
+          <option>Grade 6–8 (Middle School)</option>
+          <option>Grade 9–10 (Secondary)</option>
+          <option>Grade 11–12 (Higher Secondary)</option>
+          <option>Undergraduate</option>
+          <option>Postgraduate</option>
+          <option>Professional / Adult Learner</option>
+        </select>
+      </div>
+      <label class="checkbox-wrap">
+        <input type="checkbox" id="agreeTerms" required>
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-text">I agree to the <a href="#" style="color:var(--primary)">Terms of Service</a> and <a href="#" style="color:var(--primary)">Privacy Policy</a></span>
+      </label>
+      <div class="alert alert-danger hidden" id="errorMsg"></div>
+      <button class="btn btn-primary btn-lg w-full" type="submit" id="signupBtn" onclick="handleSignup()">
+        <span class="btn-text">Create Account →</span>
+      </button>
+    </form>
+    <div class="auth-footer">
+      Are you a teacher? <a href="teacher-signup.html">Sign up as Teacher</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script type="module">
+  import { signupStudent } from '../js/auth.js';
+
+  window.handleSignup = async function() {
+    const btn = document.getElementById('signupBtn');
+    const err = document.getElementById('errorMsg');
+    err.classList.add('hidden');
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const city = document.getElementById('city').value.trim();
+    const grade = document.getElementById('grade').value;
+    const agreed = document.getElementById('agreeTerms').checked;
+
+    if (!firstName || !lastName || !email || !password || !city) {
+      err.textContent = 'Please fill in all required fields.';
+      err.classList.remove('hidden');
+      return;
+    }
+    if (password.length < 8) {
+      err.textContent = 'Password must be at least 8 characters.';
+      err.classList.remove('hidden');
+      return;
+    }
+    if (!agreed) {
+      err.textContent = 'Please agree to the Terms of Service.';
+      err.classList.remove('hidden');
+      return;
+    }
+
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+
+    try {
+      // Try to geocode city
+      let lat = 0, lng = 0;
+      try {
+        const geo = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=YOUR_GOOGLE_MAPS_KEY`);
+        const geoData = await geo.json();
+        if (geoData.results?.[0]) {
+          lat = geoData.results[0].geometry.location.lat;
+          lng = geoData.results[0].geometry.location.lng;
+        }
+      } catch {}
+
+      await signupStudent({ name: `${firstName} ${lastName}`, email, password, city, lat, lng, grade });
+
+      // Send welcome email
+      await fetch('/api/send-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'welcome_student', to: email, name: firstName })
+      });
+
+      window.location.href = '../student/dashboard.html';
+    } catch (e) {
+      err.textContent = e.message || 'Signup failed. Please try again.';
+      err.classList.remove('hidden');
+      btn.classList.remove('btn-loading');
+      btn.disabled = false;
+    }
+  };
+
+  // Toggle password visibility
+  document.getElementById('togglePwd').addEventListener('click', () => {
+    const pwd = document.getElementById('password');
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
+  });
+</script>
+</body>
+</html>

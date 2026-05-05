@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Profile — LaTAFU</title>
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body { background: var(--gray-50); }
+    .layout { display: flex; min-height: 100vh; }
+    .main { flex: 1; margin-left: 260px; padding: 32px; max-width: calc(100vw - 260px); }
+    @media(max-width:900px) { .main { margin-left: 0; max-width: 100vw; padding: 20px; } }
+    .profile-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+    @media(max-width:1100px) { .profile-grid { grid-template-columns: 1fr; } }
+    .profile-hero { background: white; border-radius: var(--radius-xl); padding: 36px; border: 1px solid var(--gray-100); margin-bottom: 20px; }
+    .profile-hero-top { display: flex; gap: 24px; align-items: flex-start; margin-bottom: 24px; }
+    .t-name { font-size: 1.8rem; color: var(--navy); margin-bottom: 4px; }
+    .t-subjects { color: var(--primary); font-weight: 500; margin-bottom: 8px; }
+    .t-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+    .t-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; color: var(--text-muted); }
+    .t-bio { color: var(--gray-700); line-height: 1.7; }
+    .section-card { background: white; border-radius: var(--radius-xl); padding: 28px; border: 1px solid var(--gray-100); margin-bottom: 16px; }
+    .section-card h4 { font-size: 1rem; color: var(--navy); margin-bottom: 16px; }
+    .qual-list { display: flex; flex-direction: column; gap: 10px; }
+    .qual-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: var(--gray-700); }
+    .review-item { padding: 16px 0; border-bottom: 1px solid var(--gray-100); }
+    .review-item:last-child { border-bottom: none; }
+    .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .review-name { font-weight: 600; font-size: 0.9rem; color: var(--navy); }
+    .review-text { font-size: 0.88rem; color: var(--gray-700); line-height: 1.6; }
+    .sticky-card { position: sticky; top: 24px; }
+    .price-card { background: white; border-radius: var(--radius-xl); padding: 28px; border: 1px solid var(--gray-100); margin-bottom: 16px; }
+    .price-main { font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; color: var(--navy); margin: 12px 0 4px; }
+    .price-main small { font-size: 1rem; font-weight: 500; color: var(--text-muted); }
+    .avail-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .avail-day { padding: 6px 4px; text-align: center; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+    .avail-day.on { background: rgba(0,196,140,0.1); color: var(--success); }
+    .avail-day.off { background: var(--gray-100); color: var(--gray-300); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">La<span style="color:var(--primary)">TAFU</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-link" href="dashboard.html"><span class="link-icon">🏠</span> Dashboard</a>
+        <a class="sidebar-link" href="search.html"><span class="link-icon">🔍</span> Find Teachers</a>
+        <a class="sidebar-link" href="chats.html"><span class="link-icon">💬</span> My Chats</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <a class="sidebar-link" href="profile.html"><span class="link-icon">👤</span> My Profile</a>
+        <a class="sidebar-link" href="subscription.html"><span class="link-icon">⭐</span> Subscription</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebarAvatar">S</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">Student</div>
+          <div class="sidebar-user-role">Student</div>
+        </div>
+        <span style="cursor:pointer;color:var(--text-muted)" onclick="doLogout()">⏻</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div style="margin-bottom:20px">
+      <a href="search.html" class="btn btn-ghost btn-sm">← Back to Search</a>
+    </div>
+
+    <div id="pageContent">
+      <!-- Skeleton -->
+      <div class="profile-grid">
+        <div>
+          <div class="profile-hero"><div style="display:flex;gap:20px"><div class="skeleton skeleton-circle" style="width:100px;height:100px"></div><div style="flex:1"><div class="skeleton skeleton-text w-75" style="height:28px;margin-bottom:12px"></div><div class="skeleton skeleton-text w-50"></div><div class="skeleton skeleton-text w-90" style="margin-top:16px"></div></div></div></div>
+        </div>
+        <div><div class="price-card"><div class="skeleton skeleton-text w-50" style="height:40px"></div></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { requireStudentAuth, logout, getProfile, getStoredUid } from '../js/auth.js';
+  import { db } from '../js/firebase-config.js';
+  import { doc, getDoc, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  requireStudentAuth();
+  const uid = getStoredUid();
+  const name = localStorage.getItem('latfu_name') || 'Student';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0);
+  window.doLogout = async () => { await logout(); };
+
+  const params = new URLSearchParams(location.search);
+  const teacherId = params.get('id');
+
+  async function loadTeacher() {
+    if (!teacherId) { window.location.href = 'search.html'; return; }
+    const [tSnap, studentProfile] = await Promise.all([
+      getDoc(doc(db, 'teachers', teacherId)),
+      getProfile(uid, 'student')
+    ]);
+    if (!tSnap.exists()) { window.location.href = 'search.html'; return; }
+    const t = tSnap.data();
+    const isPro = studentProfile?.subscription === 'pro';
+    renderTeacher(t, isPro);
+  }
+
+  function renderTeacher(t, isPro) {
+    const stars = '★'.repeat(Math.round(t.rating||0)) + '☆'.repeat(5-Math.round(t.rating||0));
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const avail = t.availability || [];
+
+    document.getElementById('pageContent').innerHTML = `
+    <div class="profile-grid animate-fadeInUp">
+      <!-- LEFT -->
+      <div>
+        <div class="profile-hero">
+          <div class="profile-hero-top">
+            <div class="avatar avatar-xl" style="background:rgba(26,115,232,0.1);color:var(--primary);font-size:2.5rem">${t.avatar ? `<img src="${t.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : (t.name||'T').charAt(0)}</div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+                <h2 class="t-name">${t.name}</h2>
+                ${t.verified ? '<span class="badge badge-success">✅ Verified</span>' : ''}
+                ${t.subscription === 'plus' ? '<span class="pro-badge">✦ PLUS</span>' : ''}
+              </div>
+              <div class="t-subjects">${(t.subjects||[]).join(' • ')}</div>
+              <div class="t-meta">
+                <div class="t-meta-item">📍 ${t.city||'N/A'}</div>
+                <div class="t-meta-item">⏱️ ${t.experience||'N/A'} experience</div>
+                <div class="t-meta-item"><span style="color:var(--gold)">${stars}</span> ${t.rating||0} (${t.reviewCount||0} reviews)</div>
+              </div>
+              <div class="t-bio">${t.bio || 'No bio provided yet.'}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${(t.subjects||[]).map(s => `<span class="badge badge-primary">${s}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- Qualifications -->
+        ${t.qualifications?.length ? `
+        <div class="section-card">
+          <h4>🎓 Qualifications</h4>
+          <div class="qual-list">
+            ${t.qualifications.map(q => `<div class="qual-item"><span style="color:var(--success)">✓</span> ${q}</div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- Reviews -->
+        <div class="section-card">
+          <h4>⭐ Student Reviews (${t.reviewCount||0})</h4>
+          <div id="reviewsList"><div class="empty-state" style="padding:32px 0"><div class="empty-state-icon">💬</div><p>No reviews yet</p></div></div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="sticky-card">
+        <!-- Price Card -->
+        <div class="price-card">
+          <div style="font-size:0.82rem;color:var(--text-muted);font-weight:500">Session Fee</div>
+          <div class="price-main">₹${t.fee||0}<small>/hr</small></div>
+          <div class="divider"></div>
+          <button class="btn btn-primary btn-lg w-full" onclick="startChat('${t.id||teacherId}','${t.name}')">💬 Start Chatting</button>
+          <div style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-top:10px">First 10 messages free</div>
+        </div>
+
+        <!-- Availability -->
+        ${avail.length ? `
+        <div class="section-card">
+          <h4>📅 Availability</h4>
+          <div class="avail-grid">
+            ${days.map(d => `<div class="avail-day ${avail.includes(d)?'on':'off'}">${d}</div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- LeUHaute Card -->
+        <div>
+          ${t.leuhaufeScore ? (isPro ? `
+          <div class="leuhaufe-card animate-fadeInUp">
+            <div class="leuhaufe-title">✦ LeUHaute™ AI Score</div>
+            <div class="leuhaufe-score">${t.leuhaufeScore}<span>/100</span></div>
+            <div class="leuhaufe-tier">${getTierEmoji(t.leuhaufeTier)} ${(t.leuhaufeTier||'').toUpperCase()} TIER</div>
+            <div class="leuhaufe-bars">
+              ${renderBars(t.leuhaufeData)}
+            </div>
+            ${t.leuhaufeData?.verdict ? `<div class="leuhaufe-verdict">"${t.leuhaufeData.verdict}"</div>` : ''}
+          </div>` : `
+          <div class="leuhaufe-card">
+            <div class="leuhaufe-title">✦ LeUHaute™ AI Score</div>
+            <div class="leuhaufe-locked">
+              <div class="leuhaufe-locked-icon">🔒</div>
+              <p>LeUHaute scores are available to Pro subscribers only</p>
+              <a href="subscription.html" class="btn btn-gold btn-sm">Upgrade to Pro →</a>
+            </div>
+          </div>`) : `
+          <div class="leuhaufe-card">
+            <div class="leuhaufe-title">✦ LeUHaute™ AI Score</div>
+            <div class="leuhaufe-locked">
+              <div class="leuhaufe-locked-icon">⏳</div>
+              <p>This teacher hasn't completed their LeUHaute interview yet</p>
+            </div>
+          </div>`}
+        </div>
+      </div>
+    </div>`;
+
+    loadReviews();
+  }
+
+  function renderBars(data) {
+    if (!data) return '';
+    const items = [
+      ['Teaching Clarity', data.scores?.teachingClarity],
+      ['Subject Mastery', data.scores?.subjectMastery],
+      ['Student Patience', data.scores?.studentPatience],
+      ['Problem Solving', data.scores?.problemSolvingStyle],
+      ['Communication', data.scores?.communicationQuality]
+    ];
+    return items.map(([label, val]) => val ? `
+      <div class="leuhaufe-bar-row">
+        <div class="leuhaufe-bar-label">${label}</div>
+        <div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:${val}%"></div></div>
+        <div class="leuhaufe-bar-val">${val}%</div>
+      </div>` : '').join('');
+  }
+
+  function getTierEmoji(tier) {
+    return { Platinum: '💎', Gold: '🥇', Silver: '🥈', Bronze: '🥉' }[tier] || '✦';
+  }
+
+  async function loadReviews() {
+    try {
+      const snap = await getDocs(query(collection(db, 'reviews'), where('teacherId', '==', teacherId)));
+      const reviews = snap.docs.map(d => d.data());
+      const el = document.getElementById('reviewsList');
+      if (!reviews.length) return;
+      el.innerHTML = reviews.map(r => `
+        <div class="review-item">
+          <div class="review-header">
+            <div class="avatar avatar-sm" style="background:rgba(26,115,232,0.1);color:var(--primary)">${(r.studentName||'S').charAt(0)}</div>
+            <span class="review-name">${r.studentName||'Student'}</span>
+            <span style="color:var(--gold);font-size:0.85rem">${'★'.repeat(r.rating||5)}</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto">${new Date(r.createdAt?.toDate?.() || r.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="review-text">${r.text}</div>
+        </div>`).join('');
+    } catch {}
+  }
+
+  window.startChat = async function(tId, tName) {
+    const sName = localStorage.getItem('latfu_name') || 'Student';
+    // Check if chat already exists
+    const q = query(collection(db, 'chats'), where('studentUid','==',uid), where('teacherUid','==',tId));
+    const existing = await getDocs(q);
+    let chatId;
+    if (!existing.empty) {
+      chatId = existing.docs[0].id;
+    } else {
+      const chatRef = await addDoc(collection(db, 'chats'), {
+        studentUid: uid, teacherUid: tId,
+        studentName: sName, teacherName: tName,
+        messageCount: 0, unlocked: false,
+        unreadStudent: 0, unreadTeacher: 0,
+        lastMessage: '', createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      });
+      chatId = chatRef.id;
+    }
+    window.location.href = `chat.html?chatId=${chatId}`;
+  };
+
+  loadTeacher();
+</script>
+</body>
+</html>
