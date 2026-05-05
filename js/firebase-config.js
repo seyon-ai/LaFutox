@@ -12,13 +12,13 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-
 // These are PUBLIC keys — safe to expose in frontend
 // Secret keys (AI APIs, Stripe) stay in /api/ serverless functions only
 const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  databaseURL: "YOUR_DATABASE_URL"
+  apiKey: "AIzaSyBH8WBm0lxtAfNoNwPaUXZMseZmdB0bToc",
+  authDomain: "lafuto-b3c40.firebaseapp.com",
+  projectId: "lafuto-b3c40",
+  storageBucket: "lafuto-b3c40.firebasestorage.app",
+  messagingSenderId: "679744644615",
+  appId: "1:679744644615:web:75a19bdc4b6560f5c9eca2",
+  databaseURL: "https://lafuto-b3c40-default-rtdb.firebaseio.com"
 };
 
 const app = initializeApp(firebaseConfig);
