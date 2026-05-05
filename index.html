@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaTAFU — Learn And Teach Artificially For U</title>
+  <meta name="description" content="LaTAFU connects students with the best local teachers powered by AI. Find, chat, learn — smarter.">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <style>
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0D1B4B 0%, #1a3a7a 50%, #0D1B4B 100%);
+      min-height: 100vh; display: flex; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 70% 50%, rgba(26,115,232,0.15) 0%, transparent 70%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; opacity: 0.04;
+      background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-content { position: relative; z-index: 2; padding: 80px 0; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(26,115,232,0.15); border: 1px solid rgba(26,115,232,0.3);
+      color: #4A9EFF; padding: 6px 16px; border-radius: 99px;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
+      margin-bottom: 24px;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: #4A9EFF; animation: pulse 1.5s ease infinite; }
+    .hero h1 { color: white; font-size: clamp(2.5rem,6vw,4.5rem); margin-bottom: 20px; line-height: 1.1; }
+    .hero h1 .highlight { color: #4A9EFF; }
+    .hero h1 .gold { color: var(--gold); }
+    .hero-sub { font-size: 1.15rem; color: rgba(255,255,255,0.7); max-width: 520px; margin-bottom: 40px; line-height: 1.7; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 60px; }
+    .hero-stats { display: flex; gap: 40px; flex-wrap: wrap; }
+    .hero-stat-val { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: white; }
+    .hero-stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+    /* Floating cards */
+    .hero-visual { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); width: 380px; }
+    .hero-card {
+      background: rgba(255,255,255,0.07); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-xl);
+      padding: 24px; margin-bottom: 12px;
+      animation: float 4s ease-in-out infinite;
+    }
+    .hero-card:nth-child(2) { animation-delay: 1.5s; }
+    .hero-card:nth-child(3) { animation-delay: 0.8s; }
+    .hc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .hc-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-family: var(--font-display); }
+    .hc-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: white; }
+    .hc-sub { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+    .hc-score { font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: var(--gold); }
+    .hc-tier { font-size: 0.7rem; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; text-transform: uppercase; }
+    .hc-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 99px; margin: 6px 0; overflow: hidden; }
+    .hc-bar-fill { height: 100%; border-radius: 99px; background: var(--gold); }
+    .hc-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .hc-msg { font-size: 0.82rem; color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08); padding: 10px 12px; border-radius: var(--radius-sm); }
+    .hc-ai { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+
+    @media (max-width: 1024px) { .hero-visual { display: none; } }
+
+    /* HOW IT WORKS */
+    .step-num {
+      width: 56px; height: 56px; border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white; font-family: var(--font-display); font-size: 1.3rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; box-shadow: 0 8px 24px rgba(26,115,232,0.3);
+    }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+    .step-card { background: white; border-radius: var(--radius-xl); padding: 32px; border: 1px solid var(--gray-100); transition: var(--transition); }
+    .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+    .step-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+    .step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* LEUHAUFE SECTION */
+    .leuhaufe-section {
+      background: linear-gradient(135deg, var(--navy), #1a3a7a);
+      border-radius: var(--radius-xl); padding: 64px; margin: 0 24px;
+      position: relative; overflow: hidden;
+    }
+    .leuhaufe-section::before {
+      content: 'LeUHaute'; position: absolute; right: -20px; bottom: -40px;
+      font-family: var(--font-display); font-size: 10rem; font-weight: 800;
+      color: rgba(255,255,255,0.03); white-space: nowrap; pointer-events: none;
+    }
+    .leuhaufe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    @media (max-width: 768px) { .leuhaufe-grid { grid-template-columns: 1fr; } .leuhaufe-section { padding: 40px 24px; margin: 0; } }
+
+    /* FEATURES */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .feature-card { background: white; border-radius: var(--radius-xl); padding: 32px; border: 1px solid var(--gray-100); }
+    .feature-icon { font-size: 2rem; margin-bottom: 16px; }
+    .feature-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+    .feature-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+
+    /* CTA */
+    .cta-section {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: var(--radius-xl); padding: 80px; text-align: center; margin: 0 24px;
+    }
+    .cta-section h2 { color: white; margin-bottom: 16px; }
+    .cta-section p { color: rgba(255,255,255,0.8); margin-bottom: 32px; font-size: 1.05rem; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    @media (max-width: 768px) { .cta-section { padding: 48px 24px; margin: 0; } }
+
+    /* FOOTER */
+    footer { background: var(--navy); color: rgba(255,255,255,0.6); padding: 60px 0 32px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+    .footer-brand .logo { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: white; margin-bottom: 12px; }
+    .footer-brand .logo span { color: var(--primary-light); }
+    .footer-brand p { font-size: 0.88rem; line-height: 1.6; max-width: 240px; }
+    .footer-col h4 { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+    .footer-link { display: block; font-size: 0.88rem; color: rgba(255,255,255,0.5); margin-bottom: 8px; cursor: pointer; transition: color 0.2s; }
+    .footer-link:hover { color: white; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.82rem; }
+
+    /* NAVBAR for landing */
+    .land-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 32px; height: 72px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(13,27,75,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.3s ease;
+    }
+    .land-nav.scrolled { background: rgba(13,27,75,0.98); }
+    .land-nav-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: white; }
+    .land-nav-logo span { color: #4A9EFF; }
+    .land-nav-links { display: flex; gap: 4px; }
+    .land-nav-link { padding: 8px 16px; color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); }
+    .land-nav-link:hover { color: white; background: rgba(255,255,255,0.08); }
+    .land-nav-actions { display: flex; gap: 10px; }
+    @media (max-width: 768px) { .land-nav-links { display: none; } }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="land-nav" id="landNav">
+  <div class="land-nav-logo">La<span>TAFU</span></div>
+  <div class="land-nav-links">
+    <a class="land-nav-link" href="#how">How it works</a>
+    <a class="land-nav-link" href="#leuhaufe">LeUHaute</a>
+    <a class="land-nav-link" href="#features">Features</a>
+    <a class="land-nav-link" href="#pricing">Pricing</a>
+  </div>
+  <div class="land-nav-actions">
+    <a href="auth/student-login.html" class="btn btn-ghost btn-sm" style="color:white;background:rgba(255,255,255,0.1)">Log In</a>
+    <a href="auth/student-signup.html" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="container">
+    <div class="hero-content animate-fadeInUp">
+      <div class="hero-badge"><span></span> AI-POWERED TEACHER MARKETPLACE</div>
+      <h1>Find Your Perfect<br><span class="highlight">Local Teacher</span><br>Powered by <span class="gold">AI</span></h1>
+      <p class="hero-sub">LaTAFU connects students with verified local teachers through AI-monitored chat, smart matching, and the world's first AI teacher rating system — LeUHaute.</p>
+      <div class="hero-actions">
+        <a href="auth/student-signup.html" class="btn btn-primary btn-lg">Find a Teacher →</a>
+        <a href="auth/teacher-signup.html" class="btn btn-lg" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)">Become a Teacher</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hero-stat-val">10K+</div><div class="hero-stat-label">Verified Teachers</div></div>
+        <div><div class="hero-stat-val">50K+</div><div class="hero-stat-label">Students Learning</div></div>
+        <div><div class="hero-stat-val">4.9★</div><div class="hero-stat-label">Average Rating</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Visual -->
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hc-ai">✦ LeUHaute AI Score</div>
+      <div class="hc-header">
+        <div class="hc-avatar">AR</div>
+        <div><div class="hc-name">Arjun Rathore</div><div class="hc-sub">Mathematics • 8 yrs exp</div></div>
+        <div style="margin-left:auto"><div class="hc-score">91</div><div class="hc-tier">Gold Tier</div></div>
+      </div>
+      <div class="hc-label"><span>Teaching Clarity</span><span>94%</span></div>
+      <div class="hc-bar"><div class="hc-bar-fill" style="width:94%"></div></div>
+      <div class="hc-label"><span>Subject Mastery</span><span>89%</span></div>
+      <div class="hc-bar"><div class="hc-bar-fill" style="width:89%"></div></div>
+      <div class="hc-label"><span>Student Patience</span><span>91%</span></div>
+      <div class="hc-bar"><div class="hc-bar-fill" style="width:91%"></div></div>
+    </div>
+    <div class="hero-card" style="animation-delay:1s">
+      <div class="hc-ai">🤖 AI Monitor Active</div>
+      <div class="hc-msg">Hi! I can help you with calculus. When would you like to start?</div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:#00C48C;display:inline-block"></span>
+        <span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">Message safe • AI monitoring active</span>
+      </div>
+    </div>
+    <div class="hero-card" style="animation-delay:2s">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="hc-name" style="font-size:0.85rem">Chat Unlocked</div><div class="hc-sub">Continue your conversation</div></div>
+        <div style="color:#00C48C;font-size:1.5rem">✓</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-title">
+      <h2>How LaTAFU Works</h2>
+      <p>Three simple steps to find your perfect teacher — smarter than any other platform</p>
+    </div>
+    <div class="steps-grid stagger">
+      <div class="step-card animate-fadeInUp">
+        <div class="step-num">1</div>
+        <div class="step-title">Create Your Profile</div>
+        <div class="step-desc">Sign up as a student or teacher in minutes. Add your subjects, location, and preferences to get matched instantly.</div>
+      </div>
+      <div class="step-card animate-fadeInUp">
+        <div class="step-num">2</div>
+        <div class="step-title">Discover Local Teachers</div>
+        <div class="step-desc">Browse verified teachers near you on a live map. Filter by subject, fee, availability, and LeUHaute AI score.</div>
+      </div>
+      <div class="step-card animate-fadeInUp">
+        <div class="step-num">3</div>
+        <div class="step-title">Chat Safely with AI</div>
+        <div class="step-desc">Start chatting instantly. Our AI monitors every message to keep your information safe until you're ready to connect.</div>
+      </div>
+      <div class="step-card animate-fadeInUp">
+        <div class="step-num">4</div>
+        <div class="step-title">Unlock & Learn</div>
+        <div class="step-desc">After 10 messages, unlock the full conversation for a small fee. No subscriptions required to start learning.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEUHAUFE SECTION -->
+<section class="section-sm" id="leuhaufe">
+  <div class="leuhaufe-section">
+    <div class="leuhaufe-grid">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.3);color:var(--gold);padding:6px 14px;border-radius:99px;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;margin-bottom:20px">✦ EXCLUSIVE FEATURE</div>
+        <h2 style="color:white;margin-bottom:16px">Introducing<br><span style="color:var(--gold)">LeUHaute™</span></h2>
+        <p style="color:rgba(255,255,255,0.7);font-size:1.05rem;line-height:1.7;margin-bottom:24px">The world's first AI teacher intelligence system. Our AI conducts a real interview with every teacher and generates a detailed score across 5 dimensions — visible only to Pro students.</p>
+        <ul style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;list-style:none">
+          <li style="display:flex;gap:10px;align-items:flex-start;color:rgba(255,255,255,0.8);font-size:0.9rem"><span style="color:var(--gold);font-size:1rem;margin-top:1px">✓</span> AI interviews each teacher with 10 deep questions</li>
+          <li style="display:flex;gap:10px;align-items:flex-start;color:rgba(255,255,255,0.8);font-size:0.9rem"><span style="color:var(--gold);font-size:1rem;margin-top:1px">✓</span> Scores across Teaching Clarity, Mastery, Patience & more</li>
+          <li style="display:flex;gap:10px;align-items:flex-start;color:rgba(255,255,255,0.8);font-size:0.9rem"><span style="color:var(--gold);font-size:1rem;margin-top:1px">✓</span> Bronze → Silver → Gold → Platinum tiers</li>
+          <li style="display:flex;gap:10px;align-items:flex-start;color:rgba(255,255,255,0.8);font-size:0.9rem"><span style="color:var(--gold);font-size:1rem;margin-top:1px">✓</span> Re-evaluated every 90 days — always fresh</li>
+        </ul>
+        <a href="auth/student-signup.html" class="btn btn-gold btn-lg">Unlock LeUHaute with Pro →</a>
+      </div>
+      <div>
+        <!-- LeUHaute Demo Card -->
+        <div class="leuhaufe-card animate-fadeInRight">
+          <div class="leuhaufe-title">✦ LeUHaute™ AI Score</div>
+          <div class="leuhaufe-score">91<span>/100</span></div>
+          <div class="leuhaufe-tier">🥇 GOLD TIER — Top 15% of Teachers</div>
+          <div class="leuhaufe-bars">
+            <div class="leuhaufe-bar-row">
+              <div class="leuhaufe-bar-label">Teaching Clarity</div>
+              <div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:94%"></div></div>
+              <div class="leuhaufe-bar-val">94%</div>
+            </div>
+            <div class="leuhaufe-bar-row">
+              <div class="leuhaufe-bar-label">Subject Mastery</div>
+              <div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:89%"></div></div>
+              <div class="leuhaufe-bar-val">89%</div>
+            </div>
+            <div class="leuhaufe-bar-row">
+              <div class="leuhaufe-bar-label">Student Patience</div>
+              <div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:91%"></div></div>
+              <div class="leuhaufe-bar-val">91%</div>
+            </div>
+            <div class="leuhaufe-bar-row">
+              <div class="leuhaufe-bar-label">Problem Solving</div>
+              <div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:87%"></div></div>
+              <div class="leuhaufe-bar-val">87%</div>
+            </div>
+            <div class="leuhaufe-bar-row">
+              <div class="leuhaufe-bar-label">Communication</div>
+              <div class="leuhaufe-bar-track"><div class="leuhaufe-bar-fill" style="width:93%"></div></div>
+              <div class="leuhaufe-bar-val">93%</div>
+            </div>
+          </div>
+          <div class="leuhaufe-verdict">"Highly analytical teacher. Best suited for students who prefer structured, logic-first explanations. Exceptional in advanced mathematics."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-title">
+      <h2>Everything You Need</h2>
+      <p>Built for real learning, not just listings</p>
+    </div>
+    <div class="features-grid stagger">
+      <div class="feature-card animate-fadeInUp">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Chat Monitor</div>
+        <div class="feature-desc">Every message is analyzed by AI in real-time. Contact info detection goes beyond simple patterns — it understands context, tone, and even obfuscated attempts.</div>
+      </div>
+      <div class="feature-card animate-fadeInUp">
+        <div class="feature-icon">📍</div>
+        <div class="feature-title">Local Discovery</div>
+        <div class="feature-desc">Find teachers near you on a live map. Filter by distance, subject, fee range, availability, and LeUHaute tier to find your perfect match.</div>
+      </div>
+      <div class="feature-card animate-fadeInUp">
+        <div class="feature-icon">💬</div>
+        <div class="feature-title">Safe Messaging</div>
+        <div class="feature-desc">Chat freely for the first 10 messages. After that, a small unlock fee keeps the platform sustainable while giving you full conversation access.</div>
+      </div>
+      <div class="feature-card animate-fadeInUp">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-title">Verified Teachers</div>
+        <div class="feature-desc">Every teacher goes through profile review, LeUHaute AI interview, and admin verification before getting their verified badge.</div>
+      </div>
+      <div class="feature-card animate-fadeInUp">
+        <div class="feature-icon">🎓</div>
+        <div class="feature-title">AI Student Assistant</div>
+        <div class="feature-desc">Stuck on a concept? Ask the AI assistant built into every student dashboard. It helps with subject questions and guides you to the right teacher.</div>
+      </div>
+      <div class="feature-card animate-fadeInUp">
+        <div class="feature-icon">⭐</div>
+        <div class="feature-title">Pro Subscriptions</div>
+        <div class="feature-desc">Student Pro unlocks LeUHaute scores and unlimited chat. Teacher Plus gets you featured placement, analytics, and priority support.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="background:var(--gray-50)">
+  <div class="container">
+    <div class="section-title">
+      <h2>Simple, Transparent Pricing</h2>
+      <p>Start free, upgrade when you're ready</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan-card">
+        <div class="plan-name">Student Free</div>
+        <div class="plan-price"><sup>$</sup>0<span>/mo</span></div>
+        <div class="plan-desc">Start finding teachers today</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Search local teachers</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> 10 free messages per teacher</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> AI student assistant</div>
+          <div class="plan-feature"><span class="plan-feature-x">✗</span> <span style="color:var(--gray-300)">LeUHaute scores</span></div>
+          <div class="plan-feature"><span class="plan-feature-x">✗</span> <span style="color:var(--gray-300)">Featured teachers</span></div>
+        </div>
+        <a href="auth/student-signup.html" class="btn btn-outline w-full">Get Started Free</a>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-name">Student Pro</div>
+        <div class="plan-price"><sup>$</sup>9<span>/mo</span></div>
+        <div class="plan-desc">Unlock the full LaTAFU experience</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Everything in Free</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> <strong>LeUHaute™ scores unlocked</strong></div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Unlimited chat access</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Priority teacher matching</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Advanced filters</div>
+        </div>
+        <a href="auth/student-signup.html" class="btn btn-primary w-full">Go Pro</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Teacher Plus</div>
+        <div class="plan-price"><sup>$</sup>14<span>/mo</span></div>
+        <div class="plan-desc">Stand out and earn more</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Featured in search results</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> LeUHaute badge displayed</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Earnings analytics</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Priority support</div>
+          <div class="plan-feature"><span class="plan-feature-check">✓</span> Unlimited student chats</div>
+        </div>
+        <a href="auth/teacher-signup.html" class="btn btn-outline-navy w-full">Join as Teacher</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm">
+  <div class="cta-section">
+    <h2>Ready to Learn Smarter?</h2>
+    <p>Join thousands of students already finding their perfect teacher on LaTAFU.</p>
+    <div class="cta-btns">
+      <a href="auth/student-signup.html" class="btn btn-xl" style="background:white;color:var(--primary)">I'm a Student →</a>
+      <a href="auth/teacher-signup.html" class="btn btn-xl" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)">I'm a Teacher →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">La<span>TAFU</span></div>
+        <p>Learn And Teach Artificially For U — the AI-powered teacher marketplace built for the next generation of learning.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a class="footer-link" href="auth/student-signup.html">Find a Teacher</a>
+        <a class="footer-link" href="auth/teacher-signup.html">Become a Teacher</a>
+        <a class="footer-link" href="#pricing">Pricing</a>
+        <a class="footer-link" href="#leuhaufe">LeUHaute™</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a class="footer-link">About</a>
+        <a class="footer-link">Blog</a>
+        <a class="footer-link">Careers</a>
+        <a class="footer-link">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a class="footer-link">Privacy Policy</a>
+        <a class="footer-link">Terms of Service</a>
+        <a class="footer-link">Cookie Policy</a>
+        <a class="footer-link">Safety</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 LaTAFU. All rights reserved.</span>
+      <span>Learn And Teach Artificially For U</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    document.getElementById('landNav').classList.toggle('scrolled', window.scrollY > 50);
+  });
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
